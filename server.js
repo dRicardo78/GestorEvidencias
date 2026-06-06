@@ -52,14 +52,24 @@ app.use(errorHandler);
 
 // Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`
-╔══════════════════════════════════════════╗
-║  🚀 Servidor iniciado exitosamente      ║
-║  Puerto: ${PORT}                           ║
-║  Ambiente: ${process.env.NODE_ENV}                     ║
-║  Verifica: http://localhost:${PORT}/health   ║
-╚══════════════════════════════════════════╝
-  `);
+  const WIDTH = 46; // caracteres interiores entre ║ y ║
+  const pad = (str) => {
+    const visible = str.replace(/\uD83D[\uDE00-\uDE4F]|\uD83D[\uDE80-\uDEFF]/gu, '  '); // emojis cuentan ~2
+    const spaces = WIDTH - visible.length;
+    return `║  ${str}${' '.repeat(Math.max(0, spaces - 2))}║`;
+  };
+  const line  = `╔${'═'.repeat(WIDTH)}╗`;
+  const close = `╚${'═'.repeat(WIDTH)}╝`;
+  console.log([
+    '',
+    line,
+    pad('🚀 Servidor iniciado exitosamente'),
+    pad(`Puerto:   ${PORT}`),
+    pad(`Ambiente: ${process.env.NODE_ENV || 'development'}`),
+    pad(`Salud:    http://localhost:${PORT}/health`),
+    close,
+    '',
+  ].join('\n'));
 });
 
 module.exports = app;
