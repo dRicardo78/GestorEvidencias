@@ -69,7 +69,7 @@ app.listen(PORT, () => {
     pad('🚀 Servidor iniciado exitosamente'),
     pad(`Puerto:   ${PORT}`),
     pad(`Ambiente: ${process.env.NODE_ENV || 'development'}`),
-    pad(`Salud:    http://localhost:${PORT}/health`),
+    pad(`Acceso:    http://localhost:${PORT}`),
     close,
     '',
   ].join('\n'));

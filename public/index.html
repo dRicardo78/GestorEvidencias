@@ -199,23 +199,37 @@
           <div class="table-section">
             <h3>Mis Evidencias</h3>
             <div class="table-wrap">
-              <table id="tableEvidencias">
+              <table id="tableEvidencias" class="table-evidencias">
+                <colgroup>
+                  <col class="col-id-est">
+                  <col class="col-nombre-est">
+                  <col class="col-id-evid">
+                  <col class="col-nombre-evid">
+                  <col class="col-fecha">
+                  <col class="col-descripcion">
+                  <col class="col-path">
+                  <col class="col-estado">
+                  <col class="col-calif">
+                  <col class="col-profesor">
+                  <col class="col-fecha-calif">
+                </colgroup>
                 <thead>
                   <tr>
-                    <th>Id estudiante</th>
-                    <th>Nombres y apellidos estudiante</th>
-                    <th>Id Evidencia</th>
-                    <th>Fecha calificación</th>
-                    <th>Nombre evidencia</th>
-                    <th>Fecha de carga</th>
+                    <th>ID Est.</th>
+                    <th>Nombres y Apellidos</th>
+                    <th>ID Evidencia</th>
+                    <th>Nombre Evidencia</th>
+                    <th>Fecha Carga</th>
                     <th>Descripción</th>
-                    <th>Path archivo</th>
+                    <th>Path Archivo</th>
                     <th>Estado</th>
-                    <th>Calificación profesor</th>
+                    <th>Calif.</th>
+                    <th>Profesor</th>
+                    <th>Fecha Calif.</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td colspan="10" style="text-align:center;color:var(--muted);">Cargando evidencias...</td></tr>
+                  <tr><td colspan="11" style="text-align:center;color:var(--muted);">Seleccione un estudiante</td></tr>
                 </tbody>
               </table>
             </div>
@@ -243,16 +257,14 @@
                   <tr>
                     <th>ID Estudiante</th>
                     <th>Nombre Estudiante</th>
-                    <th>Nombre Evidencia</th>
-                    <th>Tipo</th>
-                    <th>Fecha Carga</th>
-                    <th>Estado</th>
+                    <th>Path Archivo</th>
                     <th>Calificación</th>
-                    <th>Acciones</th>
+                    <th>Estado</th>
+                    <th>Observac.</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td colspan="8" style="text-align:center;color:var(--muted);">Cargando evidencias...</td></tr>
+                  <tr><td colspan="6" style="text-align:center;color:var(--muted);">Cargando evidencias...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -268,51 +280,42 @@
               
               <form id="formRevision" class="modal-content">
                 <div class="field-group">
-                  <label>ID Estudiante</label>
+                  <label>Id estudiante:</label>
                   <input type="text" id="revIdEstudiante" class="input-text" readonly>
                 </div>
 
                 <div class="field-group">
-                  <label>Nombre Estudiante</label>
+                  <label>Nombres y apellidos estudiante:</label>
                   <input type="text" id="revNombreEstudiante" class="input-text" readonly>
                 </div>
 
                 <div class="field-group">
-                  <label>Nombre Evidencia</label>
-                  <input type="text" id="revNombreEvidencia" class="input-text" readonly>
-                </div>
-
-                <div class="field-group">
-                  <label>Archivo</label>
-                  <div class="file-display">
-                    <span id="revArchivo">-</span>
-                    <button type="button" id="btnDescargarArchivo" class="btn-small">Descargar</button>
+                  <label>Path al archivo:</label>
+                  <div class="field-row">
+                    <input type="text" id="revArchivo" class="input-text" readonly>
+                    <button type="button" id="btnRevisarEvidencia" class="btn">Revisar</button>
                   </div>
                 </div>
 
                 <div class="field-group">
-                  <label for="revEstado">Estado de Revisión <span class="required">*</span></label>
+                  <label for="revEstado">Estado</label>
                   <select id="revEstado" class="input-select" required>
-                    <option value="">-- Seleccione estado --</option>
-                    <option value="Sin revisar">Sin revisar</option>
-                    <option value="Revisado">Revisado</option>
+                    <option value="">-- Seleccione --</option>
+                    <option value="Revisada">Revisada</option>
+                    <option value="Pendiente">Pendiente</option>
                   </select>
                 </div>
 
                 <div class="field-group">
-                  <label for="revCalificacion">Calificación (0-5) <span class="required">*</span></label>
-                  <input type="number" id="revCalificacion" class="input-text" min="0" max="5" step="0.1" required>
-                </div>
-
-                <div class="field-group">
-                  <label for="revObservaciones">Observaciones</label>
-                  <textarea id="revObservaciones" class="input-textarea" rows="4" maxlength="500" placeholder="Observaciones sobre la evidencia..."></textarea>
+                  <label for="revCalificacion">Calificación:</label>
+                  <input type="number" id="revCalificacion" class="input-text input-small"
+                         min="0" max="5" step="0.1" placeholder="0.0" required
+                         oninput="this.value=this.value.replace(/[^0-9.]/g,'')">
                 </div>
 
                 <div class="modal-actions">
-                  <button type="button" class="btn" id="btnRevisarEvidencia">Revisar</button>
                   <button type="button" class="btn" id="btnCancelarRevision">Cancelar</button>
-                  <button type="submit" class="btn-primary">Aceptar</button>
+                  <button type="submit" class="btn-primary" id="btnAceptarRevision">Aceptar</button>
                 </div>
               </form>
             </div>
@@ -321,37 +324,23 @@
       </section>
 
       <!-- ===== VISTA 3: OBSERVACIONES (ASESOR PEDAGÓGICO) ===== -->
-      <section id="view-observaciones-asesor" class="view-panel" style="display:none;">
+            <section id="view-observaciones-asesor" class="view-panel" style="display:none;">
         <div class="panel-header">
-          <h2>Observaciones Pedagógicas</h2>
+          <h2>Asesor Pedagógico — Observaciones</h2>
         </div>
 
-        <div class="panel-content">
-          <form id="formObservacion" class="observation-form">
-            <h3>Registrar Observación</h3>
-            
-            <div class="field-group">
-              <label for="obsIdEstudiante">Id estudiante</label>
-              <input type="text" id="obsIdEstudiante" class="input-text" readonly>
-            </div>
+        <div class="panel-content obs-layout">
 
-            <div class="field-group">
-              <label for="obsNombreEstudiante">Nombre estudiante</label>
-              <input type="text" id="obsNombreEstudiante" class="input-text" readonly>
-            </div>
+          <!-- Selector de estudiante -->
+          <div class="obs-student-selector">
+            <label for="obsSelEstudiante">Estudiante:</label>
+            <select id="obsSelEstudiante" class="input-select">
+              <option value="">-- Seleccione un estudiante --</option>
+            </select>
+          </div>
 
-            <div class="field-group">
-              <label for="obsObservacion">Observación <span class="required">*</span></label>
-              <textarea id="obsObservacion" class="input-textarea" rows="6" maxlength="500" placeholder="Escriba la observación pedagógica..." required></textarea>
-            </div>
-
-            <div class="button-group">
-              <button type="button" id="btnCancelarObs">Cancelar</button>
-              <button type="submit" id="btnGuardarObs" class="btn-primary">Aceptar</button>
-            </div>
-          </form>
-
-          <div class="table-section" style="margin-top: 2rem;">
+          <!-- Tabla de observaciones del estudiante -->
+          <div class="table-section">
             <h3>Observaciones Registradas</h3>
             <div class="table-wrap">
               <table id="tableObservaciones">
@@ -363,9 +352,62 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td colspan="3" style="text-align:center;color:var(--muted);">Cargando observaciones...</td></tr>
+                  <tr><td colspan="3" style="text-align:center;color:var(--muted);">Seleccione un estudiante para ver sus observaciones</td></tr>
                 </tbody>
               </table>
+            </div>
+            <p class="table-hint">Haga clic en una fila para editar</p>
+          </div>
+
+          <!-- Sección registrar nueva observación -->
+          <div class="obs-new-section">
+            <h3>Registrar Observación</h3>
+            <div class="field-group">
+              <label>Id estudiante</label>
+              <input type="text" id="obsIdEstudiante" class="input-text" readonly placeholder="—">
+            </div>
+            <div class="field-group">
+              <label>Nombre estudiante</label>
+              <input type="text" id="obsNombreEstudiante" class="input-text" readonly placeholder="—">
+            </div>
+            <div class="field-group">
+              <label for="obsObservacionNueva">Observación <span class="required">*</span></label>
+              <textarea id="obsObservacionNueva" class="input-textarea" rows="4" maxlength="500"
+                placeholder="Seleccione un estudiante y escriba la observación..."></textarea>
+            </div>
+            <div class="button-group">
+              <button type="button" id="btnCancelarObs">Cancelar</button>
+              <button type="button" id="btnGuardarObs" class="btn-primary">Aceptar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal detalle/edición de observación -->
+        <div id="modalObservacion" class="modal-overlay" aria-hidden="true">
+          <div class="modal-form" role="dialog" aria-modal="true">
+            <div class="modal-header">
+              <h3>Observación</h3>
+              <button type="button" class="modal-close" id="btnCerrarModalObs" aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="modal-content">
+              <div class="field-group">
+                <label>Id estudiante:</label>
+                <input type="text" id="modalObsIdEstudiante" class="input-text" readonly>
+              </div>
+              <div class="field-group">
+                <label>Nombre estudiante:</label>
+                <input type="text" id="modalObsNombreEstudiante" class="input-text" readonly>
+              </div>
+              <div class="field-group">
+                <label for="modalObsTexto">Observaciones</label>
+                <textarea id="modalObsTexto" class="input-textarea" rows="5" maxlength="500"
+                  placeholder="Escriba la observación..."></textarea>
+              </div>
+              <div class="modal-actions">
+                <button type="button" class="btn btn-danger" id="btnEliminarObs">Eliminar</button>
+                <button type="button" class="btn" id="btnCancelarModalObs">Cancelar</button>
+                <button type="button" class="btn-primary" id="btnAceptarModalObs">Aceptar</button>
+              </div>
             </div>
           </div>
         </div>

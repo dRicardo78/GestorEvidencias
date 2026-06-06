@@ -414,6 +414,36 @@ button {
   border-radius: var(--radius);
 }
 
+/* ── Anchos de columna grilla Evidencias ─────────────────────────────── */
+.table-evidencias { table-layout: fixed; }
+
+.table-evidencias .col-id-est      { width: 7%; }
+.table-evidencias .col-nombre-est  { width: 16%; }
+.table-evidencias .col-id-evid     { width: 8%; }
+.table-evidencias .col-nombre-evid { width: 12%; }
+.table-evidencias .col-fecha       { width: 9%; }
+.table-evidencias .col-descripcion { width: 16%; }
+.table-evidencias .col-path        { width: 10%; }
+.table-evidencias .col-estado      { width: 7%; }
+.table-evidencias .col-calif       { width: 6%; }
+.table-evidencias .col-profesor    { width: 9%; }
+
+/* Truncar celdas largas con ellipsis en lugar de romper el layout */
+.table-evidencias td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 0; /* necesario para que text-overflow funcione con table-layout:fixed */
+}
+
+/* El ID Evidencia (ObjectId 24 chars) se muestra abreviado con tooltip */
+.table-evidencias td.cell-id {
+  font-family: monospace;
+  font-size: 0.78rem;
+  letter-spacing: -0.02em;
+  cursor: default;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -649,3 +679,62 @@ tbody a:hover {
   font-weight: bold;
 }
 
+
+/* ══════════════════════════════════════════════════════════════
+   GRILLA EVIDENCIAS — columna Fecha Calificación (col 11)
+   ══════════════════════════════════════════════════════════════ */
+.table-evidencias .col-fecha-calif { width: 9%; }
+
+/* Ajustar porcentajes para que sumen 100% con 11 columnas      */
+.table-evidencias .col-nombre-est  { width: 14%; }
+.table-evidencias .col-descripcion { width: 13%; }
+.table-evidencias .col-profesor    { width: 8%; }
+
+/* ══════════════════════════════════════════════════════════════
+   TUTOR — fila clickable + seleccionada
+   ══════════════════════════════════════════════════════════════ */
+.clickable-row:hover { background: var(--primary-light, #e8f0fe); }
+.row-selected        { background: #dbeafe !important; }
+
+/* ══════════════════════════════════════════════════════════════
+   MODAL TUTOR — campo Path + botón Revisar en línea
+   ══════════════════════════════════════════════════════════════ */
+.field-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.field-row .input-text { flex: 1; }
+.input-small { width: 6rem; }
+
+/* ══════════════════════════════════════════════════════════════
+   OBSERVACIONES — layout
+   ══════════════════════════════════════════════════════════════ */
+.obs-layout { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.obs-student-selector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.obs-student-selector label { font-weight: 600; white-space: nowrap; }
+.obs-student-selector .input-select { flex: 1; max-width: 360px; }
+
+.table-hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.obs-new-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+.obs-new-section h3 { margin: 0 0 1rem; font-size: 1rem; }

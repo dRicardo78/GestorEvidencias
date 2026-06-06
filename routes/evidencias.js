@@ -84,7 +84,7 @@ router.post('/', async (req, res, next) => {
 // PUT - Actualizar evidencia
 router.put('/:id', async (req, res, next) => {
   try {
-    const { estudiante, tipo, nombre, descripcion, archivo, estado, calificacion, observaciones } = req.body;
+    const { estudiante, tipo, nombre, descripcion, archivo, estado, calificacion, observaciones, profesor, fechaCalificacion } = req.body;
 
     // Si se intenta cambiar estudiante, verificar que existe
     if (estudiante) {
@@ -105,6 +105,8 @@ router.put('/:id', async (req, res, next) => {
     if (estado !== undefined) updateData.estado = estado;
     if (calificacion !== undefined) updateData.calificacion = calificacion;
     if (observaciones !== undefined) updateData.observacionTutor = observaciones;
+    if (profesor !== undefined) updateData.profesor = profesor;
+    if (fechaCalificacion !== undefined) updateData.fechaCalificacion = fechaCalificacion;
 
     const evidenciaActualizada = await Evidencia.findByIdAndUpdate(
       req.params.id,
