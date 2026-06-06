@@ -48,6 +48,16 @@ const evidenciaSchema = new mongoose.Schema(
       max: [5, 'La calificación máxima es 5'],
       default: null,
     },
+    profesor: {
+      type: String,
+      trim: true,
+      maxlength: [100, 'Nombre del profesor máximo 100 caracteres'],
+      default: null,
+    },
+    fechaCalificacion: {
+      type: Date,
+      default: null,
+    },
     observacionTutor: {
       type: String,
       trim: true,

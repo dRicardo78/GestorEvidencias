@@ -309,28 +309,32 @@ async function loadEvidenciasEstudiante() {
     const evidencias = await response.json();
 
     if (!Array.isArray(evidencias) || evidencias.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--muted);">No hay evidencias registradas</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--muted);">No hay evidencias registradas</td></tr>';
       return;
     }
 
-    tbody.innerHTML = evidencias.map(ev => `
+    tbody.innerHTML = evidencias.map(ev => {
+      const idEvid = ev._id || '';
+      const idCorto = idEvid.length > 8 ? idEvid.slice(-8) : idEvid; // muestra solo últimos 8 chars
+      return `
         <tr data-id="${ev._id}">
-        <td>${escapeHtml((ev.estudiante && ev.estudiante.codigo) || '')}</td>
-        <td>${escapeHtml((ev.estudiante && ev.estudiante.nombre) || '')}</td>
-        <td>${escapeHtml(ev._id || '')}</td>
-        <td>${ev.fechaCalificacion ? formatDate(ev.fechaCalificacion) : '-'}</td>
-        <td>${escapeHtml(ev.nombre)}</td>
-        <td>${formatDate(ev.fechaCarga)}</td>
-        <td>${escapeHtml(ev.descripcion || '')}</td>
-        <td>${ev.archivo ? escapeHtml(ev.archivo.nombre || ev.archivo.url || '') : '-'}</td>
-        <td><span class="badge">${escapeHtml(ev.estado || 'Sin revisar')}</span></td>
-        <td>${ev.calificacion != null ? ev.calificacion : '-'}</td>
-      </tr>
-    `).join('');
+          <td>${escapeHtml((ev.estudiante && ev.estudiante.codigo) || '')}</td>
+          <td title="${escapeHtml((ev.estudiante && ev.estudiante.nombre) || '')}">${escapeHtml((ev.estudiante && ev.estudiante.nombre) || '')}</td>
+          <td class="cell-id" title="${escapeHtml(idEvid)}">…${escapeHtml(idCorto)}</td>
+          <td title="${escapeHtml(ev.nombre)}">${escapeHtml(ev.nombre)}</td>
+          <td>${formatDate(ev.fechaCarga)}</td>
+          <td title="${escapeHtml(ev.descripcion || '')}">${escapeHtml(ev.descripcion || '')}</td>
+          <td title="${ev.archivo ? escapeHtml(ev.archivo.nombre || ev.archivo.url || '') : ''}">${ev.archivo ? escapeHtml(ev.archivo.nombre || ev.archivo.url || '') : '-'}</td>
+          <td><span class="badge">${escapeHtml(ev.estado || 'Sin revisar')}</span></td>
+          <td>${ev.calificacion != null ? ev.calificacion : '-'}</td>
+          <td title="${escapeHtml(ev.profesor || '')}">${escapeHtml(ev.profesor || '-')}</td>
+          <td>${ev.fechaCalificacion ? formatDate(ev.fechaCalificacion) : '-'}</td>
+        </tr>`;
+    }).join('');
 
   } catch (error) {
     console.error(error);
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--muted);">Error al cargar evidencias</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--muted);">Error al cargar evidencias</td></tr>';
   }  
 }
 
@@ -388,33 +392,40 @@ async function eliminarEvidencia(id) {
 // ============ VISTA 2: REVISIÓN DE EVIDENCIAS (TUTOR) ============
 function setupEvidenciaTutorEvents() {
   const filterEstudiante = document.getElementById('filterEstudiante');
-  const modalRevision = document.getElementById('modalRevision');
+  const modalRevision    = document.getElementById('modalRevision');
   const btnCancelarRevision = document.getElementById('btnCancelarRevision');
-  const formRevision = document.getElementById('formRevision');
+  const formRevision     = document.getElementById('formRevision');
 
   if (!filterEstudiante) return;
 
   filterEstudiante.addEventListener('change', loadEvidenciasTutor);
 
+  // Clic en fila → abrir modal de revisión
+  document.addEventListener('click', (e) => {
+    const row = e.target.closest('#tableEvidenciasTutor tr.clickable-row');
+    if (!row) return;
+    // Deseleccionar filas previas
+    document.querySelectorAll('#tableEvidenciasTutor tr.clickable-row')
+      .forEach(r => r.classList.remove('row-selected'));
+    row.classList.add('row-selected');
+    abrirModalRevision(row.dataset.id);
+  });
 
-
-  if (btnCancelarRevision) {
-    btnCancelarRevision.addEventListener('click', () => {
-      cerrarModalRevision();
-    });
-  }
-
-  // Botón Revisar: descarga/abre el archivo para revisión
+  // Botón Revisar dentro del modal → abre/descarga el archivo
   const btnRevisarEvidencia = document.getElementById('btnRevisarEvidencia');
   if (btnRevisarEvidencia) {
     btnRevisarEvidencia.addEventListener('click', () => {
-      const btnDesc = document.getElementById('btnDescargarArchivo');
-      if (btnDesc && !btnDesc.disabled) {
-        btnDesc.click();
+      const url = btnRevisarEvidencia.dataset.url;
+      if (url) {
+        window.open(url, '_blank');
       } else {
         showMessage('Esta evidencia no tiene archivo adjunto', 'info');
       }
     });
+  }
+
+  if (btnCancelarRevision) {
+    btnCancelarRevision.addEventListener('click', cerrarModalRevision);
   }
 
   if (formRevision) {
@@ -423,9 +434,7 @@ function setupEvidenciaTutorEvents() {
 
   if (modalRevision) {
     modalRevision.addEventListener('click', (e) => {
-      if (e.target === modalRevision) {
-        cerrarModalRevision();
-      }
+      if (e.target === modalRevision) cerrarModalRevision();
     });
   }
 }
@@ -451,17 +460,13 @@ async function loadEvidenciasTutor() {
     }
 
     tbody.innerHTML = evidencias.map(ev => `
-      <tr>
+      <tr class="clickable-row" data-id="${ev._id}" style="cursor:pointer;" title="Haga clic para revisar">
         <td>${escapeHtml((ev.estudiante && ev.estudiante.codigo) || '')}</td>
         <td>${escapeHtml((ev.estudiante && ev.estudiante.nombre) || '')}</td>
-        <td>${escapeHtml(ev.nombre)}</td>
-        <td>${escapeHtml(ev.tipo)}</td>
-        <td>${formatDate(ev.fechaCarga)}</td>
-        <td><span class="badge">${ev.estado || 'Pendiente'}</span></td>
-        <td>${ev.calificacion || '-'}</td>
-        <td>
-          <button data-action="review-evidencia" data-id="${ev._id}" class="btn-small">Revisar</button>
-        </td>
+        <td title="${ev.archivo ? escapeHtml(ev.archivo.nombre || ev.archivo.url || '') : ''}">${ev.archivo ? escapeHtml(ev.archivo.nombre || ev.archivo.url || '-') : '-'}</td>
+        <td>${ev.calificacion != null ? ev.calificacion : '-'}</td>
+        <td><span class="badge">${escapeHtml(ev.estado || 'Sin revisar')}</span></td>
+        <td title="${escapeHtml(ev.observacionTutor || '')}">${ev.observacionTutor ? escapeHtml(ev.observacionTutor.substring(0,30)) + (ev.observacionTutor.length > 30 ? '…' : '') : '-'}</td>
       </tr>
     `).join('');
   } catch (error) {
@@ -477,25 +482,14 @@ async function abrirModalRevision(id) {
 
     document.getElementById('revIdEstudiante').value = (ev.estudiante && ev.estudiante.codigo) || '';
     document.getElementById('revNombreEstudiante').value = (ev.estudiante && ev.estudiante.nombre) || '';
-    document.getElementById('revNombreEvidencia').value = ev.nombre;
-    document.getElementById('revArchivo').textContent = ev.archivo ? ev.archivo.nombre : '-';
+    const archivoNombre = ev.archivo ? (ev.archivo.nombre || ev.archivo.url || '-') : '-';
+    document.getElementById('revArchivo').value = archivoNombre;
+    const btnRev = document.getElementById('btnRevisarEvidencia');
+    if (btnRev) btnRev.dataset.url = (ev.archivo && ev.archivo.url) ? ev.archivo.url : '';
     document.getElementById('revEstado').value = ev.estado || '';
     document.getElementById('revCalificacion').value = ev.calificacion != null ? ev.calificacion : '';
-    document.getElementById('revObservaciones').value = ev.observacionTutor || '';
 
     document.getElementById('formRevision').dataset.evidenciaId = id;
-
-    // Botón descargar: habilitar solo si hay URL de archivo
-    const btnDesc = document.getElementById('btnDescargarArchivo');
-    if (btnDesc) {
-      if (ev.archivo && ev.archivo.url) {
-        btnDesc.disabled = false;
-        btnDesc.onclick = () => window.open(ev.archivo.url, '_blank');
-      } else {
-        btnDesc.disabled = true;
-        btnDesc.onclick = null;
-      }
-    }
 
     document.getElementById('modalRevision').classList.add('active');
   } catch (error) {
@@ -520,10 +514,8 @@ async function guardarRevision(e) {
   const id = document.getElementById('formRevision').dataset.evidenciaId;
   const estado = document.getElementById('revEstado').value;
   const calificacion = document.getElementById('revCalificacion').value;
-  const observaciones = document.getElementById('revObservaciones').value;
-
   if (!estado || !calificacion) {
-    showMessage('Complete todos los campos requeridos', 'error');
+    showMessage('Seleccione el estado e ingrese una calificación', 'error');
     return;
   }
 
@@ -534,7 +526,6 @@ async function guardarRevision(e) {
       body: JSON.stringify({
         estado,
         calificacion: parseFloat(calificacion),
-        observaciones,
         fechaCalificacion: new Date().toISOString()
       })
     });
@@ -551,126 +542,177 @@ async function guardarRevision(e) {
 
 // ============ VISTA 3: OBSERVACIONES (ASESOR) ============
 function setupObservacionesEvents() {
-  const formObservacion = document.getElementById('formObservacion');
-  const btnCancelarObs = document.getElementById('btnCancelarObs');
-
-  if (!formObservacion) return;
-
-  formObservacion.addEventListener('submit', (e) => {
-    e.preventDefault();
-    guardarObservacion();
-  });
-
-  if (btnCancelarObs) {
-    btnCancelarObs.addEventListener('click', () => {
-      document.getElementById('obsIdEstudiante').value = '';
-      document.getElementById('obsNombreEstudiante').value = '';
-      document.getElementById('obsObservacion').value = '';
-      APP.editingObservacionId = null;
-      APP._obsEstudianteId = null;
+  // ── Selector de estudiante → cargar sus observaciones ────────────────────
+  const obsSelEst = document.getElementById('obsSelEstudiante');
+  if (obsSelEst) {
+    obsSelEst.addEventListener('change', () => {
+      const est = APP.estudiantes.find(e => e._id === obsSelEst.value);
+      if (est) {
+        document.getElementById('obsIdEstudiante').value = est.codigo || '';
+        document.getElementById('obsNombreEstudiante').value = est.nombre || '';
+        APP._obsEstudianteId = est._id;
+      } else {
+        document.getElementById('obsIdEstudiante').value = '';
+        document.getElementById('obsNombreEstudiante').value = '';
+        APP._obsEstudianteId = null;
+      }
+      loadObservaciones();
     });
   }
 
-  // Click en fila de la tabla → poblar inputs readonly
+  // ── Clic en fila de la tabla → abrir modal de edición ────────────────────
   document.addEventListener('click', (e) => {
     const row = e.target.closest('#tableObservaciones tr[data-id]');
     if (!row) return;
-    document.querySelectorAll('#tableObservaciones tr').forEach(r => r.classList.remove('selected'));
-    row.classList.add('selected');
-    const cells = row.querySelectorAll('td');
-    if (cells.length >= 2) {
-      document.getElementById('obsIdEstudiante').value = cells[0].textContent;
-      document.getElementById('obsNombreEstudiante').value = cells[1].textContent;
-    }
-    // Buscar el estudiante correspondiente en APP.estudiantes por código
-    const codigo = cells[0].textContent;
-    const est = APP.estudiantes.find(e => e.codigo === codigo || e._id === codigo);
-    APP._obsEstudianteId = est ? (est._id || est.id) : row.dataset.id;
+    document.querySelectorAll('#tableObservaciones tr').forEach(r => r.classList.remove('row-selected'));
+    row.classList.add('row-selected');
+    abrirModalObservacion(row.dataset.id);
   });
-}
 
-async function guardarObservacion() {
-  const idEstudiante = APP._obsEstudianteId || '';
-  const observacion = document.getElementById('obsObservacion').value;
-
-  if (!idEstudiante || !observacion) {
-    showMessage('Seleccione un estudiante de la tabla y escriba la observación', 'error');
-    return;
-  }
-
-  try {
-    const method = APP.editingObservacionId ? 'PUT' : 'POST';
-    const url = APP.editingObservacionId 
-      ? `${API_BASE}/observaciones/${APP.editingObservacionId}`
-      : `${API_BASE}/observaciones`;
-
-    const response = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        estudiante: idEstudiante,
-        comentario: observacion
-      })
+  // ── Botón Cancelar sección nueva observación ──────────────────────────────
+  const btnCancelarObs = document.getElementById('btnCancelarObs');
+  if (btnCancelarObs) {
+    btnCancelarObs.addEventListener('click', () => {
+      document.getElementById('obsObservacionNueva').value = '';
+      APP.editingObservacionId = null;
     });
+  }
 
-    if (!response.ok) throw new Error('Error al guardar');
+  // ── Botón Aceptar sección nueva observación ───────────────────────────────
+  const btnGuardarObs = document.getElementById('btnGuardarObs');
+  if (btnGuardarObs) {
+    btnGuardarObs.addEventListener('click', guardarObservacion);
+  }
 
-    showMessage('Observación guardada exitosamente', 'success');
-    document.getElementById('obsIdEstudiante').value = '';
-    document.getElementById('obsNombreEstudiante').value = '';
-    document.getElementById('obsObservacion').value = '';
-    APP.editingObservacionId = null;
-    APP._obsEstudianteId = null;
-    loadObservaciones();
-  } catch (error) {
-    showMessage('Error al guardar', 'error');
+  // ── Modal observación: Cancelar y X ──────────────────────────────────────
+  const btnCancelarModal = document.getElementById('btnCancelarModalObs');
+  const btnCerrarModal   = document.getElementById('btnCerrarModalObs');
+  const btnEliminarObs   = document.getElementById('btnEliminarObs');
+  const btnAceptarModal  = document.getElementById('btnAceptarModalObs');
+  const modalObs         = document.getElementById('modalObservacion');
+
+  if (btnCancelarModal) btnCancelarModal.addEventListener('click', cerrarModalObservacion);
+  if (btnCerrarModal)   btnCerrarModal.addEventListener('click', cerrarModalObservacion);
+  if (modalObs) {
+    modalObs.addEventListener('click', (e) => {
+      if (e.target === modalObs) cerrarModalObservacion();
+    });
+  }
+
+  if (btnEliminarObs) {
+    btnEliminarObs.addEventListener('click', () => {
+      if (APP._editingObsModalId && confirm('¿Eliminar esta observación?')) {
+        eliminarObservacionModal(APP._editingObsModalId);
+      }
+    });
+  }
+
+  if (btnAceptarModal) {
+    btnAceptarModal.addEventListener('click', guardarObservacionModal);
   }
 }
 
-async function editarObservacion(id) {
+async function abrirModalObservacion(id) {
   try {
     const response = await fetch(`${API_BASE}/observaciones/${id}`);
     const obs = await response.json();
-
     const est = obs.estudiante;
-    const estCodigo = (est && (est.codigo || est._id)) || '';
-    const estNombre = (est && est.nombre) || '';
-    const estId = (est && est._id) || (typeof est === 'string' ? est : '');
-
-    document.getElementById('obsIdEstudiante').value = estCodigo;
-    document.getElementById('obsNombreEstudiante').value = estNombre;
-    document.getElementById('obsObservacion').value = obs.comentario || '';
-
-    APP.editingObservacionId = id;
-    APP._obsEstudianteId = estId;
-
-    const formObs = document.getElementById('formObservacion');
-    if (formObs) formObs.scrollIntoView({ behavior: 'smooth' });
-  } catch (error) {
-    console.error(error);
+    document.getElementById('modalObsIdEstudiante').value   = (est && est.codigo) || '';
+    document.getElementById('modalObsNombreEstudiante').value = (est && est.nombre) || '';
+    document.getElementById('modalObsTexto').value          = obs.comentario || '';
+    APP._editingObsModalId = id;
+    document.getElementById('modalObservacion').classList.add('active');
+    document.getElementById('modalObservacion').setAttribute('aria-hidden', 'false');
+  } catch (err) {
     showMessage('Error al cargar observación', 'error');
   }
 }
 
-async function loadObservaciones() {
-  const tbody = document.querySelector('#tableObservaciones tbody');
+function cerrarModalObservacion() {
+  const modal = document.getElementById('modalObservacion');
+  modal.classList.remove('active');
+  modal.setAttribute('aria-hidden', 'true');
+  document.getElementById('modalObsTexto').value = '';
+  APP._editingObsModalId = null;
+}
 
-  if (!tbody) return;
+async function guardarObservacionModal() {
+  const id      = APP._editingObsModalId;
+  const texto   = document.getElementById('modalObsTexto').value.trim();
+  if (!texto) { showMessage('Escriba una observación', 'error'); return; }
+  try {
+    const response = await fetch(`${API_BASE}/observaciones/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ comentario: texto })
+    });
+    if (!response.ok) throw new Error();
+    showMessage('Observación actualizada', 'success');
+    cerrarModalObservacion();
+    loadObservaciones();
+  } catch { showMessage('Error al guardar', 'error'); }
+}
+
+async function eliminarObservacionModal(id) {
+  try {
+    const response = await fetch(`${API_BASE}/observaciones/${id}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error();
+    showMessage('Observación eliminada', 'success');
+    cerrarModalObservacion();
+    loadObservaciones();
+  } catch { showMessage('Error al eliminar', 'error'); }
+}
+
+async function guardarObservacion() {
+  const idEstudiante = APP._obsEstudianteId || '';
+  const observacion  = (document.getElementById('obsObservacionNueva') || {}).value || '';
+
+  if (!idEstudiante) {
+    showMessage('Seleccione un estudiante primero', 'error'); return;
+  }
+  if (!observacion.trim()) {
+    showMessage('Escriba una observación', 'error'); return;
+  }
 
   try {
-    const response = await fetch(`${API_BASE}/observaciones`);
+    const response = await fetch(`${API_BASE}/observaciones`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ estudiante: idEstudiante, comentario: observacion.trim() })
+    });
+    if (!response.ok) throw new Error();
+    showMessage('Observación registrada', 'success');
+    document.getElementById('obsObservacionNueva').value = '';
+    loadObservaciones();
+  } catch { showMessage('Error al guardar', 'error'); }
+}
+
+// editarObservacion reemplazado por abrirModalObservacion
+
+async function loadObservaciones() {
+  const tbody = document.querySelector('#tableObservaciones tbody');
+  if (!tbody) return;
+
+  const estId = APP._obsEstudianteId;
+  if (!estId) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);">Seleccione un estudiante para ver sus observaciones</td></tr>';
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/observaciones?estudiante=${estId}`);
     const observaciones = await response.json();
 
     if (!Array.isArray(observaciones) || observaciones.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);">No hay observaciones registradas</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);">No hay observaciones para este estudiante</td></tr>';
       return;
     }
 
     tbody.innerHTML = observaciones.map(obs => `
-      <tr data-id="${obs._id}" style="cursor:pointer;">
+      <tr class="clickable-row" data-id="${obs._id}" style="cursor:pointer;" title="Clic para editar">
         <td>${escapeHtml((obs.estudiante && obs.estudiante.codigo) || '')}</td>
         <td>${escapeHtml((obs.estudiante && obs.estudiante.nombre) || '')}</td>
-        <td>${escapeHtml(obs.comentario || '')}</td>
+        <td title="${escapeHtml(obs.comentario || '')}">${escapeHtml(obs.comentario || '')}</td>
       </tr>
     `).join('');
   } catch (error) {
@@ -679,22 +721,7 @@ async function loadObservaciones() {
   }
 }
 
-async function confirmarEliminarObservacion(id) {
-  if (confirm('¿Desea eliminar esta observación?')) {
-    try {
-      const response = await fetch(`${API_BASE}/observaciones/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) throw new Error('Error');
-
-      showMessage('Observación eliminada', 'success');
-      loadObservaciones();
-    } catch (error) {
-      showMessage('Error al eliminar', 'error');
-    }
-  }
-}
+// confirmarEliminarObservacion reemplazado por eliminarObservacionModal
 
 // ============ FUNCIONES AUXILIARES ============
 async function loadEstudiantes() {
@@ -709,7 +736,8 @@ async function loadEstudiantes() {
     const selEstudiante = document.getElementById('selEstudiante');
     const filterEstudiante = document.getElementById('filterEstudiante');
 
-    [selEstudiante, filterEstudiante].forEach(select => {
+    const obsSelEstudiante = document.getElementById('obsSelEstudiante');
+    [selEstudiante, filterEstudiante, obsSelEstudiante].forEach(select => {
       if (select) {
         const options = estudiantes.map(e => 
           `<option value="${e._id || e.id}">${e.nombre || e.nombreEstudiante}</option>`
@@ -824,8 +852,7 @@ function setupEstudiantesEvents() {
     if (action === 'review-evidencia')  { abrirModalRevision(id); return; }
 
     // Observaciones
-    if (action === 'edit-observacion')  { editarObservacion(id); return; }
-    if (action === 'delete-observacion'){ confirmarEliminarObservacion(id); return; }
+    // observaciones gestionadas via modal (clic en fila)
   });
 }
 
