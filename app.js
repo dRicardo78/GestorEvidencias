@@ -24,11 +24,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeApp();
 });
 
-function initializeApp() {
+async function initializeApp() {
   setupEventListeners();
   setDefaultDate();
-  loadEstudiantes();
-  cargarTablaEstudiantes();
+  // Esperar a que los selects de estudiantes estén llenos antes de mostrar la vista
+  await loadEstudiantes();
   showView('gestion-estudiantes');
 }
 
@@ -66,46 +66,47 @@ function setupEventListeners() {
 }
 
 function handleMenuToggle(e) {
-  const submenuId = e.target.dataset.target;
+  // Usar currentTarget (el botón con el listener) en vez de target
+  // para que funcione aunque el clic caiga en texto u otro hijo interno
+  const btn = e.currentTarget;
+  const submenuId = btn.dataset.target;
   const submenu = document.getElementById(submenuId);
-  const isExpanded = e.target.getAttribute('aria-expanded') === 'true';
-  
-  e.target.setAttribute('aria-expanded', !isExpanded);
+  if (!submenu) return;
+  const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+  btn.setAttribute('aria-expanded', String(!isExpanded));
   submenu.style.display = isExpanded ? 'none' : 'block';
 }
 
 function showView(viewName) {
   // Ocultar todas las vistas
   document.querySelectorAll('.view-panel').forEach(panel => {
-    panel.classList.remove('active');
     panel.style.display = 'none';
   });
 
   // Mostrar vista seleccionada
   const view = document.getElementById(`view-${viewName}`);
-  if (view) {
-    view.classList.add('active');
-    view.style.display = 'block';
-    APP.currentView = viewName;
+  if (!view) {
+    console.warn(`showView: vista "view-${viewName}" no encontrada`);
+    return;
+  }
 
-    // Actualizar menú activo
-    document.querySelectorAll('.menu-item').forEach(item => {
-      item.classList.remove('active');
-      if (item.dataset.view === viewName) {
-        item.classList.add('active');
-      }
-    });
+  view.style.display = 'block';
+  APP.currentView = viewName;
 
-    // Cargar datos según vista
-    if (viewName === 'gestion-estudiantes') {
-      cargarTablaEstudiantes();
-    } else if (viewName === 'evidencia-estudiante') {
-      loadEvidenciasEstudiante();
-    } else if (viewName === 'evidencia-tutor') {
-      loadEvidenciasTutor();
-    } else if (viewName === 'observaciones-asesor') {
-      loadObservaciones();
-    }
+  // Actualizar ítem activo en el menú
+  document.querySelectorAll('.menu-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.view === viewName);
+  });
+
+  // Cargar datos según vista
+  if (viewName === 'gestion-estudiantes') {
+    cargarTablaEstudiantes();
+  } else if (viewName === 'evidencia-estudiante') {
+    loadEvidenciasEstudiante();
+  } else if (viewName === 'evidencia-tutor') {
+    loadEvidenciasTutor();
+  } else if (viewName === 'observaciones-asesor') {
+    loadObservaciones();
   }
 }
 
@@ -122,6 +123,12 @@ function setupEvidenciaEstudianteEvents() {
 
   btnCargar.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', handleFileSelect);
+
+  // Botón para quitar el archivo seleccionado antes de guardar
+  const btnEliminarArchivo = document.getElementById('btnEliminarArchivo');
+  if (btnEliminarArchivo) {
+    btnEliminarArchivo.addEventListener('click', () => limpiarArchivoSeleccionado());
+  }
   btnGuardar.addEventListener('click', (e) => {
     e.preventDefault();
     guardarEvidencia();
@@ -130,28 +137,36 @@ function setupEvidenciaEstudianteEvents() {
     formEvidencia.reset();
     APP.editingEvidenciaId = null;
     setDefaultDate();
-    document.getElementById('archivoNombreShow').textContent = 'Ningún archivo seleccionado';
+    limpiarArchivoSeleccionado();
   });
   selEstudiante.addEventListener('change', loadEvidenciasEstudiante);
 
-  document.addEventListener('click', (e) => {
-    if (e.target.dataset.action === 'edit-evidencia') {
-      editarEvidencia(e.target.dataset.id);
-    }
-    if (e.target.dataset.action === 'delete-evidencia') {
-      confirmarEliminarEvidencia(e.target.dataset.id);
-    }
-  });
+
 }
 
 function handleFileSelect(e) {
   const file = e.target.files[0];
-  const archivoNombreShow = document.getElementById('archivoNombreShow');
   if (file) {
-    archivoNombreShow.textContent = `📎 ${file.name}`;
+    mostrarArchivoSeleccionado(file.name);
   } else {
-    archivoNombreShow.textContent = 'Ningún archivo seleccionado';
+    limpiarArchivoSeleccionado();
   }
+}
+
+// Muestra el nombre del archivo y activa el botón de eliminar
+function mostrarArchivoSeleccionado(nombre) {
+  document.getElementById('archivoNombreShow').textContent = `📎 ${nombre}`;
+  const btnEliminar = document.getElementById('btnEliminarArchivo');
+  if (btnEliminar) btnEliminar.style.display = 'inline-flex';
+}
+
+// Limpia la selección de archivo y oculta el botón de eliminar
+function limpiarArchivoSeleccionado() {
+  document.getElementById('archivoNombreShow').textContent = 'Ningún archivo seleccionado';
+  const fileInput = document.getElementById('evidArchivo');
+  if (fileInput) fileInput.value = '';
+  const btnEliminar = document.getElementById('btnEliminarArchivo');
+  if (btnEliminar) btnEliminar.style.display = 'none';
 }
 
 async function guardarEvidencia() {
@@ -260,13 +275,22 @@ async function editarEvidencia(id) {
     document.getElementById('evidTipo').value = ev.tipo;
     document.getElementById('evidNombre').value = ev.nombre;
     document.getElementById('evidDescripcion').value = ev.descripcion;
-    
-    if (ev.archivo) {
-      document.getElementById('archivoNombreShow').textContent = `📎 ${ev.archivo.nombre}`;
+
+    if (ev.archivo && ev.archivo.nombre) {
+      mostrarArchivoSeleccionado(ev.archivo.nombre);
+    } else {
+      limpiarArchivoSeleccionado();
     }
 
     APP.editingEvidenciaId = id;
-    document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
+
+    // Scroll al inicio de la vista (no solo al form-section)
+    const vista = document.getElementById('view-evidencia-estudiante');
+    if (vista) {
+      vista.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const contenedor = vista.closest('.panel-content') || vista.parentElement;
+      if (contenedor) contenedor.scrollTop = 0;
+    }
   } catch (error) {
     showMessage('Error al cargar evidencia', 'error');
   }
@@ -304,11 +328,7 @@ function setupEvidenciaTutorEvents() {
 
   filterEstudiante.addEventListener('change', loadEvidenciasTutor);
 
-  document.addEventListener('click', (e) => {
-    if (e.target.dataset.action === 'review-evidencia') {
-      abrirModalRevision(e.target.dataset.id);
-    }
-  });
+
 
   if (btnCancelarRevision) {
     btnCancelarRevision.addEventListener('click', () => {
@@ -383,6 +403,19 @@ async function abrirModalRevision(id) {
     document.getElementById('revObservaciones').value = ev.observacionTutor || '';
 
     document.getElementById('formRevision').dataset.evidenciaId = id;
+
+    // Botón descargar: habilitar solo si hay URL de archivo
+    const btnDesc = document.getElementById('btnDescargarArchivo');
+    if (btnDesc) {
+      if (ev.archivo && ev.archivo.url) {
+        btnDesc.disabled = false;
+        btnDesc.onclick = () => window.open(ev.archivo.url, '_blank');
+      } else {
+        btnDesc.disabled = true;
+        btnDesc.onclick = null;
+      }
+    }
+
     document.getElementById('modalRevision').classList.add('active');
   } catch (error) {
     showMessage('Error al cargar la evidencia', 'error');
@@ -456,14 +489,7 @@ function setupObservacionesEvents() {
     });
   }
 
-  document.addEventListener('click', (e) => {
-    if (e.target.dataset.action === 'delete-observacion') {
-      confirmarEliminarObservacion(e.target.dataset.id);
-    }
-    if (e.target.dataset.action === 'edit-observacion') {
-      editarObservacion(e.target.dataset.id);
-    }
-  });
+
 }
 
 async function guardarObservacion() {
@@ -688,13 +714,27 @@ function setupEstudiantesEvents() {
   });
 
   // Eventos de tabla (Edit/Delete)
+  // ── Handler global unificado de botones de acción ──────────────────────────
+  // Un solo listener en document evita doble disparo cuando se navega entre vistas
   document.addEventListener('click', (e) => {
-    if (e.target.dataset.action === 'edit-estudiante') {
-      editarEstudiante(e.target.dataset.id);
-    }
-    if (e.target.dataset.action === 'delete-estudiante') {
-      confirmarEliminarEstudiante(e.target.dataset.id);
-    }
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const { action, id } = btn.dataset;
+
+    // Estudiantes
+    if (action === 'edit-estudiante')   { editarEstudiante(id); return; }
+    if (action === 'delete-estudiante') { confirmarEliminarEstudiante(id); return; }
+
+    // Evidencias (vista estudiante)
+    if (action === 'edit-evidencia')    { editarEvidencia(id); return; }
+    if (action === 'delete-evidencia')  { confirmarEliminarEvidencia(id); return; }
+
+    // Revisión tutor
+    if (action === 'review-evidencia')  { abrirModalRevision(id); return; }
+
+    // Observaciones
+    if (action === 'edit-observacion')  { editarObservacion(id); return; }
+    if (action === 'delete-observacion'){ confirmarEliminarObservacion(id); return; }
   });
 }
 

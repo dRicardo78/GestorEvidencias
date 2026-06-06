@@ -9,7 +9,6 @@ const evidenciaSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Estudiante',
       required: [true, 'El estudiante es obligatorio'],
-      index: true,
     },
     tipo: {
       type: String,

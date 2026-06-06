@@ -41,12 +41,30 @@ body {
 }
 
 .page-header {
-  text-align: center;
   margin-bottom: 2rem;
 }
 
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.header-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 10px;
+  flex-shrink: 0;
+  /* Elimina el fondo blanco sin editar el PNG:
+     multiply fusiona el blanco del logo con el fondo de la página,
+     volviéndolo transparente. Los colores oscuros del ícono se preservan. */
+  mix-blend-mode: multiply;
+}
+
 .page-header h1 {
-  margin: 0.5rem 0 0;
+  margin: 0;
   font-size: 2rem;
   letter-spacing: -0.02em;
   color: #111827;
@@ -294,6 +312,27 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.btn-remove-file {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.btn-remove-file:hover {
+  background: #fca5a5;
 }
 
 /* BUTTONS */

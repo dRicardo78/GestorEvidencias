@@ -49,9 +49,7 @@ const estudianteSchema = new mongoose.Schema(
   }
 );
 
-// Índices para búsquedas
-estudianteSchema.index({ codigo: 1 });
-estudianteSchema.index({ correo: 1 });
+// Índice de texto para búsquedas por nombre (unique:true en codigo/correo ya crea sus índices)
 estudianteSchema.index({ nombre: 'text' });
 
 module.exports = mongoose.model('Estudiante', estudianteSchema);

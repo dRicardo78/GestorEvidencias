@@ -9,7 +9,6 @@ const observacionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Estudiante',
       required: [true, 'El estudiante es obligatorio'],
-      index: true,
     },
     comentario: {
       type: String,

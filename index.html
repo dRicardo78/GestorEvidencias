@@ -9,8 +9,8 @@
 <body>
   <div class="page">
     <header class="page-header">
-      <div style="display:flex;align-items:center;gap:1rem;justify-content:center;">
-        <div style="width:64px;height:48px;background:#e6eefc;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;border-radius:8px">Logo</div>
+      <div class="header-brand">
+        <img src="assets/logoGE.png" alt="Logo Gestor de Evidencias" class="header-logo">
         <h1>Gestión de Evidencias Académicas</h1>
       </div>
     </header>
@@ -172,6 +172,7 @@
                   <input type="file" id="evidArchivo" accept=".pdf,.doc,.docx,.xls,.xlsx" style="display:none">
                   <button type="button" id="btnCargarArchivo" class="btn">📎 Seleccionar archivo</button>
                   <span id="archivoNombreShow" class="file-name">Ningún archivo seleccionado</span>
+                  <button type="button" id="btnEliminarArchivo" class="btn-remove-file" style="display:none" title="Quitar archivo">✕</button>
                 </div>
               </div>
             </div>
