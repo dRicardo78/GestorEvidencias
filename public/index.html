@@ -129,6 +129,15 @@
           <h2>Gestión de Evidencias Académicas</h2>
           <div class="student-selector">
             <label for="selEstudiante">Estudiante:</label>
+            <div class="form-row">
+              <label for="evidenciaIdEstudiante"><strong>Id Estudiante</strong></label>
+              <input id="evidenciaIdEstudiante" type="text" readonly class="form-control" />
+            </div>
+            
+            <div class="form-row">
+              <label for="evidenciaNombreEstudiante"><strong>Nombres estudiante</strong></label>
+              <input id="evidenciaNombreEstudiante" type="text" readonly class="form-control" />
+            </div>            
             <select id="selEstudiante" class="input-select">
               <option value="">-- Seleccione estudiante --</option>
             </select>
@@ -178,9 +187,13 @@
             </div>
 
             <div class="button-group" style="margin-top: 1.5rem;">
-              <button type="reset" id="btnLimpiarForm">Limpiar</button>
-              <button type="button" id="btnGuardarEvidencia" class="btn-primary">Guardar Evidencia</button>
+              <button type="button" id="btnCancelar">Cancelar</button>
+              <button type="button" id="btnNueva">Nueva Evidencia</button>
+              <button type="button" id="btnModificar">Modificar</button>
+              <button type="button" id="btnEliminar">Eliminar</button>
+              <button type="submit" id="btnAceptar" class="btn-primary">Aceptar</button>
             </div>
+            
           </form>
 
           <div class="table-section">
@@ -189,17 +202,20 @@
               <table id="tableEvidencias">
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Tipo</th>
-                    <th>Fecha Carga</th>
+                    <th>Id estudiante</th>
+                    <th>Nombres y apellidos estudiante</th>
+                    <th>Id Evidencia</th>
+                    <th>Fecha calificación</th>
+                    <th>Nombre evidencia</th>
+                    <th>Fecha de carga</th>
                     <th>Descripción</th>
-                    <th>Archivo</th>
-                    <th>Acciones</th>
+                    <th>Path archivo</th>
+                    <th>Estado</th>
+                    <th>Calificación profesor</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td colspan="7" style="text-align:center;color:var(--muted);">Cargando evidencias...</td></tr>
+                  <tr><td colspan="10" style="text-align:center;color:var(--muted);">Cargando evidencias...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -278,10 +294,8 @@
                   <label for="revEstado">Estado de Revisión <span class="required">*</span></label>
                   <select id="revEstado" class="input-select" required>
                     <option value="">-- Seleccione estado --</option>
-                    <option value="Pendiente">Pendiente</option>
-                    <option value="Revisada">Revisada</option>
-                    <option value="Aprobada">Aprobada</option>
-                    <option value="Rechazada">Rechazada</option>
+                    <option value="Sin revisar">Sin revisar</option>
+                    <option value="Revisado">Revisado</option>
                   </select>
                 </div>
 
@@ -296,8 +310,9 @@
                 </div>
 
                 <div class="modal-actions">
+                  <button type="button" class="btn" id="btnRevisarEvidencia">Revisar</button>
                   <button type="button" class="btn" id="btnCancelarRevision">Cancelar</button>
-                  <button type="submit" class="btn-primary">Guardar Revisión</button>
+                  <button type="submit" class="btn-primary">Aceptar</button>
                 </div>
               </form>
             </div>
@@ -316,10 +331,13 @@
             <h3>Registrar Observación</h3>
             
             <div class="field-group">
-              <label for="obsEstudiante">Estudiante <span class="required">*</span></label>
-              <select id="obsEstudiante" class="input-select" required>
-                <option value="">-- Seleccione estudiante --</option>
-              </select>
+              <label for="obsIdEstudiante">Id estudiante</label>
+              <input type="text" id="obsIdEstudiante" class="input-text" readonly>
+            </div>
+
+            <div class="field-group">
+              <label for="obsNombreEstudiante">Nombre estudiante</label>
+              <input type="text" id="obsNombreEstudiante" class="input-text" readonly>
             </div>
 
             <div class="field-group">
@@ -328,8 +346,8 @@
             </div>
 
             <div class="button-group">
-              <button type="reset" id="btnLimpiarObs">Limpiar</button>
-              <button type="submit" id="btnGuardarObs" class="btn-primary">Guardar Observación</button>
+              <button type="button" id="btnCancelarObs">Cancelar</button>
+              <button type="submit" id="btnGuardarObs" class="btn-primary">Aceptar</button>
             </div>
           </form>
 
@@ -339,15 +357,13 @@
               <table id="tableObservaciones">
                 <thead>
                   <tr>
-                    <th>ID Estudiante</th>
-                    <th>Nombre Estudiante</th>
+                    <th>Id estudiante</th>
+                    <th>Nombre estudiante</th>
                     <th>Observación</th>
-                    <th>Fecha</th>
-                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td colspan="5" style="text-align:center;color:var(--muted);">Cargando observaciones...</td></tr>
+                  <tr><td colspan="3" style="text-align:center;color:var(--muted);">Cargando observaciones...</td></tr>
                 </tbody>
               </table>
             </div>

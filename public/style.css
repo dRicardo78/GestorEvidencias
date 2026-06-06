@@ -447,10 +447,6 @@ tbody tr:hover {
   background: #f9fafb;
 }
 
-tbody tr.selected {
-  background: rgba(37, 99, 235, 0.1);
-}
-
 tbody a {
   color: var(--primary);
   text-decoration: none;
@@ -646,3 +642,10 @@ tbody a:hover {
     padding: 0.65rem;
   }
 }
+
+#tableEvidencias tr.selected,
+#tableObservaciones tr.selected {
+  background-color: #d0ebff;   /* azul claro */
+  font-weight: bold;
+}
+

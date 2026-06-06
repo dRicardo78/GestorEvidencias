@@ -17,23 +17,26 @@ const observacionesRoutes = require('./routes/observaciones');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// ===== MIDDLEWARE =====
 app.use(express.json());
-app.use(express.static('./'));  // Servir archivos estáticos (HTML, CSS, JS)
 app.use(cors({
   origin: process.env.FRONTEND_URL || '*',
   credentials: true,
 }));
 
-// Conectar a MongoDB
+// ===== FRONTEND =====
+// Servir archivos estáticos desde la carpeta "public"
+app.use(express.static('public'));
+
+// ===== CONEXIÓN DB =====
 connectDB();
 
-// Rutas API
+// ===== RUTAS API =====
 app.use('/api/evidencias', evidenciasRoutes);
 app.use('/api/estudiantes', estudiantesRoutes);
 app.use('/api/observaciones', observacionesRoutes);
 
-// Ruta raíz para verificar que el servidor funciona
+// ===== RUTA DE SALUD =====
 app.get('/health', (req, res) => {
   res.json({
     status: '✅ Servidor funcionando',
@@ -47,14 +50,14 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Middleware de manejo de errores (debe ser el último)
+// ===== MANEJO DE ERRORES =====
 app.use(errorHandler);
 
-// Iniciar servidor
+// ===== ARRANQUE SERVIDOR =====
 app.listen(PORT, () => {
-  const WIDTH = 46; // caracteres interiores entre ║ y ║
+  const WIDTH = 46;
   const pad = (str) => {
-    const visible = str.replace(/\uD83D[\uDE00-\uDE4F]|\uD83D[\uDE80-\uDEFF]/gu, '  '); // emojis cuentan ~2
+    const visible = str.replace(/\uD83D[\uDE00-\uDE4F]|\uD83D[\uDE80-\uDEFF]/gu, '  ');
     const spaces = WIDTH - visible.length;
     return `║  ${str}${' '.repeat(Math.max(0, spaces - 2))}║`;
   };
