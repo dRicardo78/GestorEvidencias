@@ -315,16 +315,16 @@ async function loadEvidenciasEstudiante() {
 
     tbody.innerHTML = evidencias.map(ev => `
         <tr data-id="${ev._id}">
-        <td>${escapeHtml(ev._id || '')}</td>
         <td>${escapeHtml((ev.estudiante && ev.estudiante.codigo) || '')}</td>
         <td>${escapeHtml((ev.estudiante && ev.estudiante.nombre) || '')}</td>
+        <td>${escapeHtml(ev._id || '')}</td>
+        <td>${ev.fechaCalificacion ? formatDate(ev.fechaCalificacion) : '-'}</td>
         <td>${escapeHtml(ev.nombre)}</td>
-        <td>${escapeHtml(ev.tipo)}</td>
         <td>${formatDate(ev.fechaCarga)}</td>
         <td>${escapeHtml(ev.descripcion || '')}</td>
+        <td>${ev.archivo ? escapeHtml(ev.archivo.nombre || ev.archivo.url || '') : '-'}</td>
         <td><span class="badge">${escapeHtml(ev.estado || 'Sin revisar')}</span></td>
         <td>${ev.calificacion != null ? ev.calificacion : '-'}</td>
-        <td>${ev.archivo ? escapeHtml(ev.archivo.nombre || ev.archivo.url || '') : '-'}</td>
       </tr>
     `).join('');
 
@@ -534,7 +534,8 @@ async function guardarRevision(e) {
       body: JSON.stringify({
         estado,
         calificacion: parseFloat(calificacion),
-        observaciones
+        observaciones,
+        fechaCalificacion: new Date().toISOString()
       })
     });
 
