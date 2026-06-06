@@ -69,7 +69,11 @@ app.listen(PORT, () => {
     pad('🚀 Servidor iniciado exitosamente'),
     pad(`Puerto:   ${PORT}`),
     pad(`Ambiente: ${process.env.NODE_ENV || 'development'}`),
+<<<<<<< Updated upstream
     pad(`Acesso:    http://localhost:${PORT}`),
+=======
+    pad(`Acceso:    http://localhost:${PORT}`),
+>>>>>>> Stashed changes
     close,
     '',
   ].join('\n'));
