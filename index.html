@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestión de Biblioteca UDI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+    <header class="page-header">
+      <div style="display:flex;align-items:center;gap:1rem;justify-content:center;">
+        <div style="width:64px;height:48px;background:#e6eefc;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;border-radius:8px">Logo</div>
+        <h1>Gestión de Evidencias Académicas</h1>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside id="sidebar" class="panel sidebar" aria-label="Menú lateral">
+        <nav>
+          <ul style="list-style:none;padding:0;margin:0;">
+            <!-- ESTUDIANTES -->
+            <li>
+              <button class="menu-toggle" data-target="submenu-estudiantes" aria-expanded="false">📚 Estudiantes</button>
+              <ul id="submenu-estudiantes" class="submenu" style="display:none;margin:0.5rem 0 1rem 0;padding-left:1rem;">
+                <li><button class="menu-item" data-view="gestion-estudiantes">Gestión de Estudiantes</button></li>
+                <li><button class="menu-item" data-view="evidencia-estudiante">Gestión de Evidencias</button></li>
+              </ul>
+            </li>
+            
+            <!-- TUTORES ACADÉMICOS -->
+            <li>
+              <button class="menu-toggle" data-target="submenu-tutores" aria-expanded="false">👨‍🏫 Tutores Académicos</button>
+              <ul id="submenu-tutores" class="submenu" style="display:none;margin:0.5rem 0 1rem 0;padding-left:1rem;">
+                <li><button class="menu-item" data-view="evidencia-tutor">Revisar Evidencias</button></li>
+              </ul>
+            </li>
+            
+            <!-- ASESORES PEDAGÓGICOS -->
+            <li>
+              <button class="menu-toggle" data-target="submenu-asesores" aria-expanded="false">🎓 Asesores Pedagógicos</button>
+              <ul id="submenu-asesores" class="submenu" style="display:none;margin:0.5rem 0 1rem 0;padding-left:1rem;">
+                <li><button class="menu-item" data-view="observaciones-asesor">Observaciones</button></li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+        <div style="margin-top:1.5rem;text-align:center;">
+          <button id="btnSalir" style="min-width:120px;">Salir</button>
+        </div>
+      </aside>
+
+      <!-- ===== VISTA 0: GESTIÓN DE ESTUDIANTES ===== -->
+      <section id="view-gestion-estudiantes" class="view-panel" style="display:none;">
+        <div class="panel-header">
+          <h2>Gestión de Estudiantes</h2>
+        </div>
+
+        <div class="panel-content">
+          <form id="formEstudiante" class="estudiante-form">
+            <div class="form-section">
+              <h3>Información del Estudiante</h3>
+
+              <div class="field-group">
+                <label for="estCodigo">Código <span class="required">*</span></label>
+                <input type="text" id="estCodigo" class="input-text" maxlength="20" placeholder="Ej: EST001" required>
+              </div>
+
+              <div class="field-group">
+                <label for="estNombre">Nombre <span class="required">*</span></label>
+                <input type="text" id="estNombre" class="input-text" maxlength="150" placeholder="Ej: Juan Pérez" required>
+              </div>
+
+              <div class="field-group">
+                <label for="estCorreo">Correo <span class="required">*</span></label>
+                <input type="email" id="estCorreo" class="input-text" maxlength="100" placeholder="Ej: juan@example.com" required>
+              </div>
+
+              <div class="field-group">
+                <label for="estPrograma">Programa <span class="required">*</span></label>
+                <select id="estPrograma" class="input-select" required>
+                  <option value="">-- Seleccione programa --</option>
+                  <option value="Ingeniería de Sistemas">Ingeniería de Sistemas</option>
+                  <option value="Administración de Empresas">Administración de Empresas</option>
+                  <option value="Contabilidad">Contabilidad</option>
+                  <option value="Otros">Otros</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="estSemestre">Semestre <span class="required">*</span></label>
+                <input type="number" id="estSemestre" class="input-text" min="1" max="12" placeholder="Ej: 3" required>
+              </div>
+            </div>
+
+            <div class="button-group">
+              <button type="reset" id="btnLimpiarEstudiante">Limpiar</button>
+              <button type="submit" id="btnGuardarEstudiante" class="btn-primary">Guardar Estudiante</button>
+            </div>
+          </form>
+
+          <!-- Tabla de estudiantes -->
+          <div class="table-section">
+            <h3>Listado de Estudiantes</h3>
+            <div class="table-wrap">
+              <table id="tableEstudiantes">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Programa</th>
+                    <th>Semestre</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="6" style="text-align:center;color:var(--muted);">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== VISTA 1: GESTIÓN DE EVIDENCIAS (ESTUDIANTE) ===== -->
+      <section id="view-evidencia-estudiante" class="view-panel" style="display:none;">
+        <div class="panel-header">
+          <h2>Gestión de Evidencias Académicas</h2>
+          <div class="student-selector">
+            <label for="selEstudiante">Estudiante:</label>
+            <select id="selEstudiante" class="input-select">
+              <option value="">-- Seleccione estudiante --</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="panel-content">
+          <form id="formEvidencia" class="evidence-form">
+            <div class="form-section">
+              <h3>Información de la Evidencia</h3>
+              
+              <div class="field-group">
+                <label for="evidTipo">Tipo <span class="required">*</span></label>
+                <select id="evidTipo" class="input-select" required>
+                  <option value="">-- Seleccione tipo --</option>
+                  <option value="Informe">Informe</option>
+                  <option value="Proyecto">Proyecto</option>
+                  <option value="Bitácora">Bitácora</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="evidNombre">Nombre de la Evidencia <span class="required">*</span></label>
+                <input type="text" id="evidNombre" class="input-text" maxlength="100" placeholder="Ej: Informe Proyecto Final" required>
+              </div>
+
+              <div class="field-group">
+                <label for="evidDescripcion">Descripción <span class="required">*</span></label>
+                <textarea id="evidDescripcion" class="input-textarea" rows="4" maxlength="500" placeholder="Describa brevemente la evidencia..." required></textarea>
+              </div>
+
+              <div class="field-group">
+                <label for="evidFecha">Fecha de Carga</label>
+                <input type="date" id="evidFecha" class="input-text" readonly>
+              </div>
+
+              <div class="field-group">
+                <label for="evidArchivo">Cargar Archivo</label>
+                <div class="file-upload">
+                  <input type="file" id="evidArchivo" accept=".pdf,.doc,.docx,.xls,.xlsx" style="display:none">
+                  <button type="button" id="btnCargarArchivo" class="btn">📎 Seleccionar archivo</button>
+                  <span id="archivoNombreShow" class="file-name">Ningún archivo seleccionado</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="button-group" style="margin-top: 1.5rem;">
+              <button type="reset" id="btnLimpiarForm">Limpiar</button>
+              <button type="button" id="btnGuardarEvidencia" class="btn-primary">Guardar Evidencia</button>
+            </div>
+          </form>
+
+          <div class="table-section">
+            <h3>Mis Evidencias</h3>
+            <div class="table-wrap">
+              <table id="tableEvidencias">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Fecha Carga</th>
+                    <th>Descripción</th>
+                    <th>Archivo</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="7" style="text-align:center;color:var(--muted);">Cargando evidencias...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== VISTA 2: REVISIÓN DE EVIDENCIAS (TUTOR) ===== -->
+      <section id="view-evidencia-tutor" class="view-panel" style="display:none;">
+        <div class="panel-header">
+          <h2>Revisión de Evidencias de Estudiantes</h2>
+          <div class="filters">
+            <label for="filterEstudiante">Filtrar por estudiante:</label>
+            <select id="filterEstudiante" class="input-select">
+              <option value="">-- Todos --</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="panel-content">
+          <div class="table-section">
+            <div class="table-wrap">
+              <table id="tableEvidenciasTutor">
+                <thead>
+                  <tr>
+                    <th>ID Estudiante</th>
+                    <th>Nombre Estudiante</th>
+                    <th>Nombre Evidencia</th>
+                    <th>Tipo</th>
+                    <th>Fecha Carga</th>
+                    <th>Estado</th>
+                    <th>Calificación</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="8" style="text-align:center;color:var(--muted);">Cargando evidencias...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Modal de Revisión -->
+          <div id="modalRevision" class="modal-overlay" aria-hidden="true">
+            <div class="modal-form" role="dialog" aria-modal="true">
+              <div class="modal-header">
+                <h3>Revisar Evidencia</h3>
+                <button type="button" class="modal-close" aria-label="Cerrar">&times;</button>
+              </div>
+              
+              <form id="formRevision" class="modal-content">
+                <div class="field-group">
+                  <label>ID Estudiante</label>
+                  <input type="text" id="revIdEstudiante" class="input-text" readonly>
+                </div>
+
+                <div class="field-group">
+                  <label>Nombre Estudiante</label>
+                  <input type="text" id="revNombreEstudiante" class="input-text" readonly>
+                </div>
+
+                <div class="field-group">
+                  <label>Nombre Evidencia</label>
+                  <input type="text" id="revNombreEvidencia" class="input-text" readonly>
+                </div>
+
+                <div class="field-group">
+                  <label>Archivo</label>
+                  <div class="file-display">
+                    <span id="revArchivo">-</span>
+                    <button type="button" id="btnDescargarArchivo" class="btn-small">Descargar</button>
+                  </div>
+                </div>
+
+                <div class="field-group">
+                  <label for="revEstado">Estado de Revisión <span class="required">*</span></label>
+                  <select id="revEstado" class="input-select" required>
+                    <option value="">-- Seleccione estado --</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Revisada">Revisada</option>
+                    <option value="Aprobada">Aprobada</option>
+                    <option value="Rechazada">Rechazada</option>
+                  </select>
+                </div>
+
+                <div class="field-group">
+                  <label for="revCalificacion">Calificación (0-5) <span class="required">*</span></label>
+                  <input type="number" id="revCalificacion" class="input-text" min="0" max="5" step="0.1" required>
+                </div>
+
+                <div class="field-group">
+                  <label for="revObservaciones">Observaciones</label>
+                  <textarea id="revObservaciones" class="input-textarea" rows="4" maxlength="500" placeholder="Observaciones sobre la evidencia..."></textarea>
+                </div>
+
+                <div class="modal-actions">
+                  <button type="button" class="btn" id="btnCancelarRevision">Cancelar</button>
+                  <button type="submit" class="btn-primary">Guardar Revisión</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== VISTA 3: OBSERVACIONES (ASESOR PEDAGÓGICO) ===== -->
+      <section id="view-observaciones-asesor" class="view-panel" style="display:none;">
+        <div class="panel-header">
+          <h2>Observaciones Pedagógicas</h2>
+        </div>
+
+        <div class="panel-content">
+          <form id="formObservacion" class="observation-form">
+            <h3>Registrar Observación</h3>
+            
+            <div class="field-group">
+              <label for="obsEstudiante">Estudiante <span class="required">*</span></label>
+              <select id="obsEstudiante" class="input-select" required>
+                <option value="">-- Seleccione estudiante --</option>
+              </select>
+            </div>
+
+            <div class="field-group">
+              <label for="obsObservacion">Observación <span class="required">*</span></label>
+              <textarea id="obsObservacion" class="input-textarea" rows="6" maxlength="500" placeholder="Escriba la observación pedagógica..." required></textarea>
+            </div>
+
+            <div class="button-group">
+              <button type="reset" id="btnLimpiarObs">Limpiar</button>
+              <button type="submit" id="btnGuardarObs" class="btn-primary">Guardar Observación</button>
+            </div>
+          </form>
+
+          <div class="table-section" style="margin-top: 2rem;">
+            <h3>Observaciones Registradas</h3>
+            <div class="table-wrap">
+              <table id="tableObservaciones">
+                <thead>
+                  <tr>
+                    <th>ID Estudiante</th>
+                    <th>Nombre Estudiante</th>
+                    <th>Observación</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="5" style="text-align:center;color:var(--muted);">Cargando observaciones...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modales Globales -->
+  <div id="modalSalir" class="modal-overlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3>Confirmar salida</h3>
+      <p>¿Desea salir del sistema?</p>
+      <div class="modal-actions">
+        <button id="salirNo" class="btn">Cancelar</button>
+        <button id="salirYes" class="btn btn-danger">Salir</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="messageBox" class="message-toast" role="status" aria-live="polite"></div>
+
+  <script src="api-client.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

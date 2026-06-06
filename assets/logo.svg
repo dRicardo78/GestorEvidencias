@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="logoTitle">
+  <title id="logoTitle">Biblioteca</title>
+  <rect width="120" height="120" rx="28" fill="#2563eb" />
+  <path d="M34 38h52a4 4 0 0 1 4 4v40a4 4 0 0 1-4 4H34a4 4 0 0 1-4-4V42a4 4 0 0 1 4-4Zm4 8v32h44V46H38Zm7 4h7v4h-7v-4Zm0 10h28v4H45v-4Zm0 10h20v4H45v-4Z" fill="#ffffff" />
+</svg>
