@@ -12,7 +12,7 @@ const evidenciaSchema = new mongoose.Schema(
     },
     tipo: {
       type: String,
-      enum: ['Informe', 'Proyecto', 'Bitácora'],
+      enum: ['Informe', 'Proyecto', 'Bitácora', 'Otro'],
       required: [true, 'El tipo de evidencia es obligatorio'],
     },
     nombre: {
@@ -39,8 +39,8 @@ const evidenciaSchema = new mongoose.Schema(
     },
     estado: {
       type: String,
-      enum: ['Pendiente', 'Revisada', 'Aprobada', 'Rechazada'],
-      default: 'Pendiente',
+      enum: ['Pendiente', 'Revisado', 'Sin revisar', 'Revisada', 'Aprobada', 'Rechazada'],
+      default: 'Sin revisar',
     },
     calificacion: {
       type: Number,

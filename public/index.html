@@ -62,29 +62,31 @@
               <h3>Información del Estudiante</h3>
 
               <div class="field-group">
-                <label for="estCodigo">Código <span class="required">*</span></label>
-                <input type="text" id="estCodigo" class="input-text" maxlength="20" placeholder="Ej: EST001" required>
+                <label for="estPrograma">Programa <span class="required">*</span></label>
+                <select id="estPrograma" class="input-select" required>
+                  <option value="">-- Seleccione programa --</option>
+                  <option value="IS">Ingeniería de Sistemas</option>
+                  <option value="AE">Administración de Empresas</option>
+                  <option value="CO">Contabilidad</option>
+                  <option value="OT">Otros</option>
+                </select>
               </div>
 
               <div class="field-group">
-                <label for="estNombre">Nombre <span class="required">*</span></label>
+                <label for="estCodigo">Código <span class="required">*</span></label>
+                <input type="text" id="estCodigo" class="input-text" maxlength="20"
+                       placeholder="Se genera automáticamente" readonly
+                       style="background:#f3f4f6;cursor:default;">
+              </div>
+
+              <div class="field-group">
+                <label for="estNombre">Nombre completo <span class="required">*</span></label>
                 <input type="text" id="estNombre" class="input-text" maxlength="150" placeholder="Ej: Juan Pérez" required>
               </div>
 
               <div class="field-group">
                 <label for="estCorreo">Correo <span class="required">*</span></label>
                 <input type="email" id="estCorreo" class="input-text" maxlength="100" placeholder="Ej: juan@example.com" required>
-              </div>
-
-              <div class="field-group">
-                <label for="estPrograma">Programa <span class="required">*</span></label>
-                <select id="estPrograma" class="input-select" required>
-                  <option value="">-- Seleccione programa --</option>
-                  <option value="Ingeniería de Sistemas">Ingeniería de Sistemas</option>
-                  <option value="Administración de Empresas">Administración de Empresas</option>
-                  <option value="Contabilidad">Contabilidad</option>
-                  <option value="Otros">Otros</option>
-                </select>
               </div>
 
               <div class="field-group">
@@ -129,73 +131,15 @@
           <h2>Gestión de Evidencias Académicas</h2>
           <div class="student-selector">
             <label for="selEstudiante">Estudiante:</label>
-            <div class="form-row">
-              <label for="evidenciaIdEstudiante"><strong>Id Estudiante</strong></label>
-              <input id="evidenciaIdEstudiante" type="text" readonly class="form-control" />
-            </div>
-            
-            <div class="form-row">
-              <label for="evidenciaNombreEstudiante"><strong>Nombres estudiante</strong></label>
-              <input id="evidenciaNombreEstudiante" type="text" readonly class="form-control" />
-            </div>            
             <select id="selEstudiante" class="input-select">
-              <option value="">-- Seleccione estudiante --</option>
+              <option value="">-- Todos / Seleccione estudiante --</option>
             </select>
           </div>
         </div>
 
         <div class="panel-content">
-          <form id="formEvidencia" class="evidence-form">
-            <div class="form-section">
-              <h3>Información de la Evidencia</h3>
-              
-              <div class="field-group">
-                <label for="evidTipo">Tipo <span class="required">*</span></label>
-                <select id="evidTipo" class="input-select" required>
-                  <option value="">-- Seleccione tipo --</option>
-                  <option value="Informe">Informe</option>
-                  <option value="Proyecto">Proyecto</option>
-                  <option value="Bitácora">Bitácora</option>
-                  <option value="Otro">Otro</option>
-                </select>
-              </div>
 
-              <div class="field-group">
-                <label for="evidNombre">Nombre de la Evidencia <span class="required">*</span></label>
-                <input type="text" id="evidNombre" class="input-text" maxlength="100" placeholder="Ej: Informe Proyecto Final" required>
-              </div>
-
-              <div class="field-group">
-                <label for="evidDescripcion">Descripción <span class="required">*</span></label>
-                <textarea id="evidDescripcion" class="input-textarea" rows="4" maxlength="500" placeholder="Describa brevemente la evidencia..." required></textarea>
-              </div>
-
-              <div class="field-group">
-                <label for="evidFecha">Fecha de Carga</label>
-                <input type="date" id="evidFecha" class="input-text" readonly>
-              </div>
-
-              <div class="field-group">
-                <label for="evidArchivo">Cargar Archivo</label>
-                <div class="file-upload">
-                  <input type="file" id="evidArchivo" accept=".pdf,.doc,.docx,.xls,.xlsx" style="display:none">
-                  <button type="button" id="btnCargarArchivo" class="btn">📎 Seleccionar archivo</button>
-                  <span id="archivoNombreShow" class="file-name">Ningún archivo seleccionado</span>
-                  <button type="button" id="btnEliminarArchivo" class="btn-remove-file" style="display:none" title="Quitar archivo">✕</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="button-group" style="margin-top: 1.5rem;">
-              <button type="button" id="btnCancelar">Cancelar</button>
-              <button type="button" id="btnNueva">Nueva Evidencia</button>
-              <button type="button" id="btnModificar">Modificar</button>
-              <button type="button" id="btnEliminar">Eliminar</button>
-              <button type="submit" id="btnAceptar" class="btn-primary">Aceptar</button>
-            </div>
-            
-          </form>
-
+          <!-- TABLA PRIMERO -->
           <div class="table-section">
             <h3>Mis Evidencias</h3>
             <div class="table-wrap">
@@ -229,9 +173,92 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td colspan="11" style="text-align:center;color:var(--muted);">Seleccione un estudiante</td></tr>
+                  <tr><td colspan="11" style="text-align:center;color:var(--muted);">Cargando evidencias...</td></tr>
                 </tbody>
               </table>
+            </div>
+            <p class="table-hint">Haga clic en una fila para ver el detalle · Seleccione una fila para Modificar o Eliminar</p>
+          </div>
+
+          <!-- BARRA DE ACCIONES entre tabla y formulario -->
+          <div class="action-bar">
+            <button type="button" id="btnCancelar" class="btn">Cancelar</button>
+            <button type="button" id="btnNueva"    class="btn">Nueva Evidencia</button>
+            <button type="button" id="btnModificar" class="btn">Modificar</button>
+            <button type="button" id="btnEliminar"  class="btn btn-danger-outline">Eliminar</button>
+            <button type="button" id="btnAceptar"   class="btn btn-primary">Aceptar</button>
+          </div>
+
+          <!-- FORMULARIO DEBAJO -->
+          <form id="formEvidencia" class="evidence-form">
+            <div class="form-section">
+              <h3>Nueva Evidencia</h3>
+
+              <div class="field-group">
+                <label for="evidTipo">Tipo <span class="required">*</span></label>
+                <select id="evidTipo" class="input-select" required>
+                  <option value="">-- Seleccione tipo --</option>
+                  <option value="Informe">Informe</option>
+                  <option value="Proyecto">Proyecto</option>
+                  <option value="Bitácora">Bitácora</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="evidNombre">Nombre de la Evidencia <span class="required">*</span></label>
+                <input type="text" id="evidNombre" class="input-text" maxlength="100"
+                       placeholder="Ej: Informe Proyecto Final" required>
+              </div>
+
+              <div class="field-group">
+                <label for="evidDescripcion">Descripción <span class="required">*</span></label>
+                <textarea id="evidDescripcion" class="input-textarea" rows="4" maxlength="500"
+                          placeholder="Describa brevemente la evidencia..." required></textarea>
+              </div>
+
+              <div class="field-group">
+                <label for="evidFecha">Fecha de Carga</label>
+                <input type="date" id="evidFecha" class="input-text" readonly>
+              </div>
+
+              <div class="field-group">
+                <label>Cargar Archivo</label>
+                <div class="file-upload">
+                  <input type="file" id="evidArchivo" accept=".pdf,.doc,.docx,.xls,.xlsx" style="display:none">
+                  <button type="button" id="btnCargarArchivo" class="btn">📎 Seleccionar archivo</button>
+                  <span id="archivoNombreShow" class="file-name">Ningún archivo seleccionado</span>
+                  <button type="button" id="btnEliminarArchivo" class="btn-remove-file" style="display:none" title="Quitar archivo">✕</button>
+                </div>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- FIX 4: Modal detalle evidencia -->
+        <div id="modalDetalleEvidencia" class="modal-overlay" aria-hidden="true">
+          <div class="modal-form modal-wide" role="dialog" aria-modal="true">
+            <div class="modal-header">
+              <h3>Detalle de Evidencia</h3>
+              <button type="button" class="modal-close" id="btnCerrarDetalleEvidencia" aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="modal-content modal-detalle-grid">
+              <div class="detalle-row"><span class="detalle-label">ID Evidencia</span><span id="detEvidId" class="detalle-val"></span></div>
+              <div class="detalle-row"><span class="detalle-label">ID Estudiante</span><span id="detEstId" class="detalle-val"></span></div>
+              <div class="detalle-row"><span class="detalle-label">Nombres y Apellidos</span><span id="detEstNombre" class="detalle-val"></span></div>
+              <div class="detalle-row"><span class="detalle-label">Tipo</span><span id="detTipo" class="detalle-val"></span></div>
+              <div class="detalle-row"><span class="detalle-label">Nombre Evidencia</span><span id="detNombre" class="detalle-val"></span></div>
+              <div class="detalle-row"><span class="detalle-label">Fecha Carga</span><span id="detFecha" class="detalle-val"></span></div>
+              <div class="detalle-row detalle-full"><span class="detalle-label">Descripción</span><span id="detDescripcion" class="detalle-val"></span></div>
+              <div class="detalle-row"><span class="detalle-label">Path Archivo</span><span id="detPath" class="detalle-val"></span></div>
+              <div class="detalle-row"><span class="detalle-label">Estado</span><span id="detEstado" class="detalle-val"></span></div>
+              <div class="detalle-row"><span class="detalle-label">Calificación</span><span id="detCalif" class="detalle-val"></span></div>
+              <div class="detalle-row"><span class="detalle-label">Profesor</span><span id="detProfesor" class="detalle-val"></span></div>
+              <div class="detalle-row"><span class="detalle-label">Fecha Calificación</span><span id="detFechaCalif" class="detalle-val"></span></div>
+            </div>
+            <div class="modal-actions" style="margin-top:1rem;">
+              <button type="button" class="btn" id="btnCerrarDetalleEvidencia2">Cerrar</button>
             </div>
           </div>
         </div>
@@ -275,7 +302,7 @@
             <div class="modal-form" role="dialog" aria-modal="true">
               <div class="modal-header">
                 <h3>Revisar Evidencia</h3>
-                <button type="button" class="modal-close" aria-label="Cerrar">&times;</button>
+                <button type="button" class="modal-close" id="btnCerrarRevision" aria-label="Cerrar">&times;</button>
               </div>
               
               <form id="formRevision" class="modal-content">
@@ -301,16 +328,21 @@
                   <label for="revEstado">Estado</label>
                   <select id="revEstado" class="input-select" required>
                     <option value="">-- Seleccione --</option>
-                    <option value="Revisada">Revisada</option>
-                    <option value="Pendiente">Pendiente</option>
+                    <option value="Revisado">Revisado</option>
+                    <option value="Sin revisar">Sin revisar</option>
                   </select>
                 </div>
 
                 <div class="field-group">
-                  <label for="revCalificacion">Calificación:</label>
-                  <input type="number" id="revCalificacion" class="input-text input-small"
-                         min="0" max="5" step="0.1" placeholder="0.0" required
-                         oninput="this.value=this.value.replace(/[^0-9.]/g,'')">
+                  <label for="revCalificacion">Calificación: <small>(0.0 – 5.0)</small></label>
+                  <input type="text" id="revCalificacion" class="input-text input-small"
+                         inputmode="decimal" placeholder="0.0" required>
+                </div>
+
+                <div class="field-group">
+                  <label for="revProfesor">Nombre del Profesor <span class="required">*</span></label>
+                  <input type="text" id="revProfesor" class="input-text"
+                         placeholder="Ingrese su nombre completo" required>
                 </div>
 
                 <div class="modal-actions">

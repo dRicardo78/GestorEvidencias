@@ -738,3 +738,87 @@ tbody a:hover {
   padding: 1.25rem;
 }
 .obs-new-section h3 { margin: 0 0 1rem; font-size: 1rem; }
+
+/* ══════════════════════════════════════════════════════════════
+   MODAL DETALLE EVIDENCIA
+   ══════════════════════════════════════════════════════════════ */
+.modal-wide { width: min(100%, 680px); }
+
+.modal-detalle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1.5rem;
+}
+
+.detalle-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.detalle-full { grid-column: 1 / -1; }
+
+.detalle-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.detalle-val {
+  font-size: 0.95rem;
+  color: var(--text);
+  padding: 0.4rem 0.6rem;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  min-height: 2rem;
+  word-break: break-word;
+}
+
+/* ── Fila seleccionada en grilla evidencias ────────────────── */
+#tableEvidencias tr.selected { background: #dbeafe; }
+#tableEvidencias tr[data-id] { cursor: pointer; }
+#tableEvidencias tr[data-id]:hover { background: #eff6ff; }
+
+/* ══════════════════════════════════════════════════════════════
+   CÓDIGO AUTOMÁTICO — campo readonly estilo diferenciado
+   ══════════════════════════════════════════════════════════════ */
+#estCodigo[readonly] {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #166534;
+  font-weight: 600;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BARRA DE ACCIONES (entre tabla y formulario evidencias)
+   ══════════════════════════════════════════════════════════════ */
+.action-bar {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  flex-wrap: wrap;
+}
+
+.btn-danger-outline {
+  background: transparent;
+  border: 1.5px solid #dc2626;
+  color: #dc2626;
+}
+.btn-danger-outline:hover { background: #fee2e2; }
+
+/* ══════════════════════════════════════════════════════════════
+   ORDENAMIENTO DE TABLAS
+   ══════════════════════════════════════════════════════════════ */
+thead th[style*="cursor"] { user-select: none; }
+
+thead th.sort-asc::after  { content: ' ▲'; font-size: 0.7rem; opacity: 0.8; }
+thead th.sort-desc::after { content: ' ▼'; font-size: 0.7rem; opacity: 0.8; }
+
+thead th:hover { background: #e8f0fe; }

@@ -24,16 +24,99 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeApp();
 });
 
+
+// ═══════════════════════════════════════════════════════════════════════
+// ORDENAMIENTO DE TABLAS — clic en <th> ordena asc/desc
+// ═══════════════════════════════════════════════════════════════════════
+const tableSortState = {};   // { tableId: { col, dir } }
+
+function initSortableTable(tableId, skipCols = []) {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+  table.querySelectorAll('thead th').forEach((th, idx) => {
+    if (skipCols.includes(idx)) return;
+    th.style.cursor = 'pointer';
+    th.title = 'Clic para ordenar';
+    th.addEventListener('click', () => sortTable(tableId, idx));
+  });
+}
+
+function sortTable(tableId, colIdx) {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+  const tbody = table.querySelector('tbody');
+  const rows  = Array.from(tbody.querySelectorAll('tr[data-id], tr:not([colspan])'));
+  if (rows.length === 0) return;
+
+  const prev = tableSortState[tableId] || { col: -1, dir: 'asc' };
+  const dir  = (prev.col === colIdx && prev.dir === 'asc') ? 'desc' : 'asc';
+  tableSortState[tableId] = { col: colIdx, dir };
+
+  // Actualizar indicadores visuales en headers
+  table.querySelectorAll('thead th').forEach((th, i) => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (i === colIdx) th.classList.add(dir === 'asc' ? 'sort-asc' : 'sort-desc');
+  });
+
+  rows.sort((a, b) => {
+    const ta = a.cells[colIdx] ? a.cells[colIdx].textContent.trim() : '';
+    const tb = b.cells[colIdx] ? b.cells[colIdx].textContent.trim() : '';
+    // Detectar si es fecha (dd/mm/yyyy), número o texto
+    const da = parseDate(ta), db = parseDate(tb);
+    if (da && db) return dir === 'asc' ? da - db : db - da;
+    const na = parseFloat(ta.replace(',', '.')), nb = parseFloat(tb.replace(',', '.'));
+    if (!isNaN(na) && !isNaN(nb)) return dir === 'asc' ? na - nb : nb - na;
+    return dir === 'asc' ? ta.localeCompare(tb, 'es') : tb.localeCompare(ta, 'es');
+  });
+
+  rows.forEach(r => tbody.appendChild(r));
+}
+
+function parseDate(str) {
+  // Soporta dd/mm/yyyy y yyyy-mm-dd
+  const m1 = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m1) return new Date(m1[3], m1[2]-1, m1[1]);
+  const m2 = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m2) return new Date(m2[1], m2[2]-1, m2[3]);
+  return null;
+}
+
 async function initializeApp() {
   setupEventListeners();
   setDefaultDate();
-  // Esperar a que los selects de estudiantes estén llenos antes de mostrar la vista
   await loadEstudiantes();
+  // Ordenamiento por columna en todas las tablas (skipCols = índices sin ordenar)
+  initSortableTable('tableEstudiantes',     [5]);  // skip: Acciones
+  initSortableTable('tableEvidencias',      []);   // todas ordenables
+  initSortableTable('tableEvidenciasTutor', []);
+  initSortableTable('tableObservaciones',   []);
   showView('gestion-estudiantes');
 }
 
 // ============ NAVEGACIÓN Y VISTAS ============
 function setupEventListeners() {
+  // ── FIX 6: Botones cerrar de TODOS los modales ─────────────────────
+  // Modal revisión tutor
+  document.getElementById('btnCerrarRevision')
+    ?.addEventListener('click', cerrarModalRevision);
+
+  // Modal detalle evidencia (X y botón Cerrar)
+  document.getElementById('btnCerrarDetalleEvidencia')
+    ?.addEventListener('click', cerrarModalDetalleEvidencia);
+  document.getElementById('btnCerrarDetalleEvidencia2')
+    ?.addEventListener('click', cerrarModalDetalleEvidencia);
+
+  // Modal observación (ya wired en setupObservacionesEvents pero por si acaso)
+  document.getElementById('btnCerrarModalObs')
+    ?.addEventListener('click', cerrarModalObservacion);
+
+  // Click en backdrop cierra cualquier modal
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('active');
+    });
+  });
+
   // Menú lateral
   document.querySelectorAll('.menu-toggle').forEach(btn => {
     btn.addEventListener('click', handleMenuToggle);
@@ -189,9 +272,7 @@ function setupEvidenciaEstudianteEvents() {
 
   // ── Select estudiante → poblar inputs readonly + recargar grilla ─────
   selEstudiante.addEventListener('change', () => {
-    const opt = selEstudiante.selectedOptions[0];
-    document.getElementById('evidenciaIdEstudiante').value  = opt ? opt.value : '';
-    document.getElementById('evidenciaNombreEstudiante').value = opt ? opt.text  : '';
+    APP.editingEvidenciaId = null;
     loadEvidenciasEstudiante();
   });
 
@@ -204,6 +285,7 @@ function setupEvidenciaEstudianteEvents() {
       document.querySelectorAll('#tableEvidencias tr.selected')
         .forEach(r => r.classList.remove('selected'));
       row.classList.add('selected');
+      abrirModalDetalleEvidencia(row.dataset.id);
     });
   }
 }
@@ -299,13 +381,11 @@ async function loadEvidenciasEstudiante() {
   const idEstudiante = document.getElementById('selEstudiante').value;
   const tbody = document.querySelector('#tableEvidencias tbody');
 
-  if (!idEstudiante) {
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--muted);">Seleccione un estudiante</td></tr>';
-    return;
-  }
-
   try {
-    const response = await fetch(`${API_BASE}/evidencias?estudiante=${idEstudiante}`);
+    const url = idEstudiante
+      ? `${API_BASE}/evidencias?estudiante=${idEstudiante}`
+      : `${API_BASE}/evidencias`;
+    const response = await fetch(url);
     const evidencias = await response.json();
 
     if (!Array.isArray(evidencias) || evidencias.length === 0) {
@@ -336,6 +416,36 @@ async function loadEvidenciasEstudiante() {
     console.error(error);
     tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--muted);">Error al cargar evidencias</td></tr>';
   }  
+}
+
+
+async function abrirModalDetalleEvidencia(id) {
+  try {
+    const r = await fetch(`${API_BASE}/evidencias/${id}`);
+    const ev = await r.json();
+    document.getElementById('detEvidId').textContent      = ev._id || '-';
+    document.getElementById('detEstId').textContent       = (ev.estudiante && ev.estudiante.codigo) || '-';
+    document.getElementById('detEstNombre').textContent   = (ev.estudiante && ev.estudiante.nombre) || '-';
+    document.getElementById('detTipo').textContent        = ev.tipo || '-';
+    document.getElementById('detNombre').textContent      = ev.nombre || '-';
+    document.getElementById('detFecha').textContent       = formatDate(ev.fechaCarga);
+    document.getElementById('detDescripcion').textContent = ev.descripcion || '-';
+    document.getElementById('detPath').textContent        = ev.archivo ? (ev.archivo.nombre || ev.archivo.url || '-') : '-';
+    document.getElementById('detEstado').textContent      = ev.estado || 'Sin revisar';
+    document.getElementById('detCalif').textContent       = ev.calificacion != null ? ev.calificacion : '-';
+    document.getElementById('detProfesor').textContent    = ev.profesor || '-';
+    document.getElementById('detFechaCalif').textContent  = ev.fechaCalificacion ? formatDate(ev.fechaCalificacion) : '-';
+    const modal = document.getElementById('modalDetalleEvidencia');
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+  } catch (err) {
+    showMessage('Error al cargar detalle', 'error');
+  }
+}
+
+function cerrarModalDetalleEvidencia() {
+  const modal = document.getElementById('modalDetalleEvidencia');
+  if (modal) { modal.classList.remove('active'); modal.setAttribute('aria-hidden', 'true'); }
 }
 
 async function editarEvidencia(id) {
@@ -399,6 +509,36 @@ function setupEvidenciaTutorEvents() {
   if (!filterEstudiante) return;
 
   filterEstudiante.addEventListener('change', loadEvidenciasTutor);
+
+  // Campo calificación — permitir dígitos, punto Y coma (teclado numérico)
+  // Se usa keydown para interceptar la tecla ANTES de que el browser la procese
+  const inputCalif = document.getElementById('revCalificacion');
+  if (inputCalif) {
+    inputCalif.addEventListener('keydown', (e) => {
+      // Permitir: dígitos, punto, coma, Backspace, Delete, Tab, flechas, Home, End
+      const allowed = [
+        'Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End',
+        '0','1','2','3','4','5','6','7','8','9',
+        '.', ',',
+        'Numpad0','Numpad1','Numpad2','Numpad3','Numpad4',
+        'Numpad5','Numpad6','Numpad7','Numpad8','Numpad9',
+        'NumpadDecimal'   // punto del teclado numérico
+      ];
+      const isAllowed = allowed.includes(e.key) || allowed.includes(e.code);
+      if (!isAllowed) { e.preventDefault(); return; }
+
+      // NumpadDecimal → insertar punto en la posición del cursor
+      if (e.code === 'NumpadDecimal') {
+        e.preventDefault();
+        const pos = inputCalif.selectionStart;
+        const val = inputCalif.value;
+        // Solo permitir un separador decimal
+        if (val.includes('.') || val.includes(',')) return;
+        inputCalif.value = val.slice(0, pos) + '.' + val.slice(inputCalif.selectionEnd);
+        inputCalif.setSelectionRange(pos + 1, pos + 1);
+      }
+    });
+  }
 
   // Clic en fila → abrir modal de revisión
   document.addEventListener('click', (e) => {
@@ -488,6 +628,8 @@ async function abrirModalRevision(id) {
     if (btnRev) btnRev.dataset.url = (ev.archivo && ev.archivo.url) ? ev.archivo.url : '';
     document.getElementById('revEstado').value = ev.estado || '';
     document.getElementById('revCalificacion').value = ev.calificacion != null ? ev.calificacion : '';
+    const revProfEl = document.getElementById('revProfesor');
+    if (revProfEl) revProfEl.value = ev.profesor || '';
 
     document.getElementById('formRevision').dataset.evidenciaId = id;
 
@@ -511,12 +653,20 @@ function cerrarModalRevision() {
 async function guardarRevision(e) {
   e.preventDefault();
 
-  const id = document.getElementById('formRevision').dataset.evidenciaId;
-  const estado = document.getElementById('revEstado').value;
+  const id           = document.getElementById('formRevision').dataset.evidenciaId;
+  const estado       = document.getElementById('revEstado').value;
   const calificacion = document.getElementById('revCalificacion').value;
-  if (!estado || !calificacion) {
-    showMessage('Seleccione el estado e ingrese una calificación', 'error');
-    return;
+  const profesorEl   = document.getElementById('revProfesor');
+  const profesor     = profesorEl ? profesorEl.value.trim() : '';
+
+  if (!estado) {
+    showMessage('Seleccione el estado de la revisión', 'error'); return;
+  }
+  if (!calificacion) {
+    showMessage('Ingrese la calificación', 'error'); return;
+  }
+  if (!profesor) {
+    showMessage('Ingrese el nombre del profesor que realiza la revisión', 'error'); return;
   }
 
   try {
@@ -525,7 +675,8 @@ async function guardarRevision(e) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         estado,
-        calificacion: parseFloat(calificacion),
+        calificacion: parseFloat(calificacion.replace(',', '.')),
+        profesor,
         fechaCalificacion: new Date().toISOString()
       })
     });
@@ -740,7 +891,7 @@ async function loadEstudiantes() {
     [selEstudiante, filterEstudiante, obsSelEstudiante].forEach(select => {
       if (select) {
         const options = estudiantes.map(e => 
-          `<option value="${e._id || e.id}">${e.nombre || e.nombreEstudiante}</option>`
+          `<option value="${e._id || e.id}">${e.codigo ? e.codigo + ' — ' : ''}${e.nombre || e.nombreEstudiante}</option>`
         ).join('');
         select.innerHTML = '<option value="">-- Seleccione --</option>' + options;
       }
@@ -828,9 +979,16 @@ function setupEstudiantesEvents() {
   // Limpiar formulario
   btnLimpiar.addEventListener('click', () => {
     formEstudiante.reset();
+    document.getElementById('estCodigo').value = '';
     APP.editingEstudianteId = null;
     document.getElementById('btnGuardarEstudiante').textContent = 'Guardar Estudiante';
   });
+
+  // Código automático al elegir programa
+  const estPrograma = document.getElementById('estPrograma');
+  if (estPrograma) {
+    estPrograma.addEventListener('change', generarCodigoEstudiante);
+  }
 
   // Eventos de tabla (Edit/Delete)
   // ── Handler global unificado de botones de acción ──────────────────────────
@@ -892,20 +1050,45 @@ async function cargarTablaEstudiantes() {
   }
 }
 
+const PROGRAMA_PREFIJOS = {
+  'IS': 'IS', 'AE': 'AE', 'CO': 'CO', 'OT': 'OT'
+};
+
+function generarCodigoEstudiante() {
+  const programa = document.getElementById('estPrograma').value;
+  const codigoInput = document.getElementById('estCodigo');
+  if (!programa || !codigoInput) return;
+  if (APP.editingEstudianteId) return; // en edición no regenerar
+
+  const prefijo = PROGRAMA_PREFIJOS[programa] || programa.slice(0, 2).toUpperCase();
+
+  // Contar estudiantes del mismo programa en la lista ya cargada (sin fetch)
+  const mismo = (APP.estudiantes || []).filter(e => {
+    const p = e.programa === 'Ingeniería de Sistemas'    ? 'IS'
+            : e.programa === 'Administración de Empresas' ? 'AE'
+            : e.programa === 'Contabilidad'               ? 'CO'
+            : e.programa === 'Otros'                      ? 'OT'
+            : e.programa; // si ya viene como sigla
+    return p === prefijo;
+  });
+
+  const num = String(mismo.length + 1).padStart(3, '0');
+  codigoInput.value = `${prefijo}-${num}`;
+}
+
 async function guardarEstudiante() {
   try {
-    const codigo = document.getElementById('estCodigo').value.trim();
-    const nombre = document.getElementById('estNombre').value.trim();
-    const correo = document.getElementById('estCorreo').value.trim();
+    const codigo  = document.getElementById('estCodigo').value.trim();
+    const nombre  = document.getElementById('estNombre').value.trim();
+    const correo  = document.getElementById('estCorreo').value.trim();
     const programa = document.getElementById('estPrograma').value.trim();
     const semestre = document.getElementById('estSemestre').value.trim();
 
-    // Validación
-    const errorValidacion = validarEstudiante({ codigo, nombre, correo, programa, semestre });
-    if (errorValidacion) {
-      showMessage(errorValidacion, 'error');
-      return;
-    }
+    if (!programa) { showMessage('Seleccione un programa primero', 'error'); return; }
+    if (!codigo)   { showMessage('El código no se generó — seleccione el programa', 'error'); return; }
+    if (!nombre)   { showMessage('Ingrese el nombre del estudiante', 'error'); return; }
+    if (!correo)   { showMessage('Ingrese el correo del estudiante', 'error'); return; }
+    if (!semestre) { showMessage('Ingrese el semestre', 'error'); return; }
 
     let url = `${API_BASE}/estudiantes`;
     let method = 'POST';
@@ -922,7 +1105,8 @@ async function guardarEstudiante() {
         codigo,
         nombre,
         correo,
-        programa,
+        programa: { IS:'Ingeniería de Sistemas', AE:'Administración de Empresas',
+                    CO:'Contabilidad', OT:'Otros' }[programa] || programa,
         semestre: parseInt(semestre)
       })
     });
@@ -937,6 +1121,7 @@ async function guardarEstudiante() {
 
     // Limpiar y recargar
     document.getElementById('formEstudiante').reset();
+    document.getElementById('estCodigo').value = '';
     APP.editingEstudianteId = null;
     document.getElementById('btnGuardarEstudiante').textContent = 'Guardar Estudiante';
 
@@ -956,7 +1141,13 @@ async function editarEstudiante(id) {
     document.getElementById('estCodigo').value = est.codigo;
     document.getElementById('estNombre').value = est.nombre;
     document.getElementById('estCorreo').value = est.correo;
-    document.getElementById('estPrograma').value = est.programa;
+    const progMap = {
+      'Ingeniería de Sistemas': 'IS',
+      'Administración de Empresas': 'AE',
+      'Contabilidad': 'CO',
+      'Otros': 'OT'
+    };
+    document.getElementById('estPrograma').value = progMap[est.programa] || est.programa;
     document.getElementById('estSemestre').value = est.semestre;
 
     APP.editingEstudianteId = id;
