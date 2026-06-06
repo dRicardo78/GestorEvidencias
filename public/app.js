@@ -17,7 +17,7 @@ const APP = {
 
 // ============ CONFIGURACIÓN API ============
 // Construir URL base dinámicamente según el origen actual
-const API_BASE = window.location.origin + '/api';
+const API_BASE = "http://localhost:5000/api";
 
 // ============ INICIALIZACIÓN ============
 document.addEventListener('DOMContentLoaded', () => {
@@ -113,35 +113,86 @@ function showView(viewName) {
 // ============ VISTA 1: GESTIÓN DE EVIDENCIAS (ESTUDIANTE) ============
 function setupEvidenciaEstudianteEvents() {
   const formEvidencia = document.getElementById('formEvidencia');
-  const btnCargar = document.getElementById('btnCargarArchivo');
-  const fileInput = document.getElementById('evidArchivo');
-  const btnGuardar = document.getElementById('btnGuardarEvidencia');
-  const btnLimpiar = document.getElementById('btnLimpiarForm');
   const selEstudiante = document.getElementById('selEstudiante');
 
-  if (!btnCargar || !fileInput) return;
+  const btnCancelar = document.getElementById('btnCancelar');
+  const btnNueva = document.getElementById('btnNueva');
+  const btnModificar = document.getElementById('btnModificar');
+  const btnEliminar = document.getElementById('btnEliminar');
+  const btnAceptar = document.getElementById('btnAceptar');
 
-  btnCargar.addEventListener('click', () => fileInput.click());
-  fileInput.addEventListener('change', handleFileSelect);
-
-  // Botón para quitar el archivo seleccionado antes de guardar
-  const btnEliminarArchivo = document.getElementById('btnEliminarArchivo');
-  if (btnEliminarArchivo) {
-    btnEliminarArchivo.addEventListener('click', () => limpiarArchivoSeleccionado());
-  }
-  btnGuardar.addEventListener('click', (e) => {
-    e.preventDefault();
-    guardarEvidencia();
-  });
-  btnLimpiar.addEventListener('click', () => {
+  // Cancelar
+  btnCancelar.addEventListener('click', () => {
     formEvidencia.reset();
     APP.editingEvidenciaId = null;
     setDefaultDate();
     limpiarArchivoSeleccionado();
   });
+
+  // Nueva Evidencia
+  btnNueva.addEventListener('click', () => {
+    formEvidencia.reset();
+    APP.editingEvidenciaId = null;
+    setDefaultDate();
+    limpiarArchivoSeleccionado();
+    // Llevar al inicio del formulario
+    formEvidencia.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  
+
+  // Modificar
+  btnModificar.addEventListener('click', () => {
+    const selectedRow = document.querySelector('#tableEvidencias tr.selected');
+    if (selectedRow) {
+      const evidenciaId = selectedRow.getAttribute('data-id');
+      APP.editingEvidenciaId = evidenciaId;
+      cargarEvidenciaParaEdicion(evidenciaId);
+      formEvidencia.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      Utils.showError("Seleccione una evidencia en la grilla primero");
+    }
+  });
+  
+
+  // Eliminar
+  btnEliminar.addEventListener('click', () => {
+    const selectedRow = document.querySelector('#tableEvidencias tr.selected');
+    if (selectedRow) {
+      const evidenciaId = selectedRow.getAttribute('data-id');
+      eliminarEvidencia(evidenciaId);
+    } else {
+      Utils.showError("Seleccione una evidencia en la grilla primero");
+    }
+  });
+  
+
+  // Aceptar (submit)
+  formEvidencia.addEventListener('submit', (e) => {
+    e.preventDefault();
+    guardarEvidencia();
+  });
+
+  // Botón para quitar archivo seleccionado
+  const btnEliminarArchivo = document.getElementById('btnEliminarArchivo');
+  if (btnEliminarArchivo) {
+    btnEliminarArchivo.addEventListener('click', () => limpiarArchivoSeleccionado());
+  }
+
+  // Select estudiante → cargar evidencias y rellenar inputs readonly
   selEstudiante.addEventListener('change', loadEvidenciasEstudiante);
+  selEstudiante.addEventListener('change', () => {
+    const opt = selEstudiante.selectedOptions[0];
+    document.getElementById('evidenciaIdEstudiante').value = opt ? opt.value : '';
+    document.getElementById('evidenciaNombreEstudiante').value = opt ? opt.text : '';
+  });
 
-
+  document.querySelectorAll('#tableEvidencias tbody tr').forEach(row => {
+    row.addEventListener('click', () => {
+      document.querySelectorAll('#tableEvidencias tbody tr').forEach(r => r.classList.remove('selected'));
+      row.classList.add('selected');
+    });
+  });
+  
 }
 
 function handleFileSelect(e) {
@@ -248,7 +299,7 @@ async function loadEvidenciasEstudiante() {
     }
 
     tbody.innerHTML = evidencias.map(ev => `
-      <tr>
+        <tr data-id="${ev._id}">
         <td>${escapeHtml(ev._id || '')}</td>
         <td>${escapeHtml(ev.nombre)}</td>
         <td>${escapeHtml(ev.tipo)}</td>
@@ -261,10 +312,11 @@ async function loadEvidenciasEstudiante() {
         </td>
       </tr>
     `).join('');
+
   } catch (error) {
     console.error(error);
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);">Error al cargar evidencias</td></tr>';
-  }
+  }  
 }
 
 async function editarEvidencia(id) {
