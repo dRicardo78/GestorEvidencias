@@ -203,16 +203,19 @@
                 <thead>
                   <tr>
                     <th>ID</th>
+                    <th>Id Estudiante</th>
+                    <th>Nombres estudiante</th>
                     <th>Nombre</th>
                     <th>Tipo</th>
                     <th>Fecha Carga</th>
                     <th>Descripción</th>
-                    <th>Archivo</th>
-                    <th>Acciones</th>
+                    <th>Estado</th>
+                    <th>Calificación profesor</th>
+                    <th>Path archivo</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td colspan="7" style="text-align:center;color:var(--muted);">Cargando evidencias...</td></tr>
+                  <tr><td colspan="10" style="text-align:center;color:var(--muted);">Cargando evidencias...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -291,10 +294,8 @@
                   <label for="revEstado">Estado de Revisión <span class="required">*</span></label>
                   <select id="revEstado" class="input-select" required>
                     <option value="">-- Seleccione estado --</option>
-                    <option value="Pendiente">Pendiente</option>
-                    <option value="Revisada">Revisada</option>
-                    <option value="Aprobada">Aprobada</option>
-                    <option value="Rechazada">Rechazada</option>
+                    <option value="Sin revisar">Sin revisar</option>
+                    <option value="Revisado">Revisado</option>
                   </select>
                 </div>
 
@@ -309,8 +310,9 @@
                 </div>
 
                 <div class="modal-actions">
+                  <button type="button" class="btn" id="btnRevisarEvidencia">Revisar</button>
                   <button type="button" class="btn" id="btnCancelarRevision">Cancelar</button>
-                  <button type="submit" class="btn-primary">Guardar Revisión</button>
+                  <button type="submit" class="btn-primary">Aceptar</button>
                 </div>
               </form>
             </div>
@@ -329,10 +331,13 @@
             <h3>Registrar Observación</h3>
             
             <div class="field-group">
-              <label for="obsEstudiante">Estudiante <span class="required">*</span></label>
-              <select id="obsEstudiante" class="input-select" required>
-                <option value="">-- Seleccione estudiante --</option>
-              </select>
+              <label for="obsIdEstudiante">Id estudiante</label>
+              <input type="text" id="obsIdEstudiante" class="input-text" readonly>
+            </div>
+
+            <div class="field-group">
+              <label for="obsNombreEstudiante">Nombre estudiante</label>
+              <input type="text" id="obsNombreEstudiante" class="input-text" readonly>
             </div>
 
             <div class="field-group">
@@ -341,8 +346,8 @@
             </div>
 
             <div class="button-group">
-              <button type="reset" id="btnLimpiarObs">Limpiar</button>
-              <button type="submit" id="btnGuardarObs" class="btn-primary">Guardar Observación</button>
+              <button type="button" id="btnCancelarObs">Cancelar</button>
+              <button type="submit" id="btnGuardarObs" class="btn-primary">Aceptar</button>
             </div>
           </form>
 
@@ -352,15 +357,13 @@
               <table id="tableObservaciones">
                 <thead>
                   <tr>
-                    <th>ID Estudiante</th>
-                    <th>Nombre Estudiante</th>
+                    <th>Id estudiante</th>
+                    <th>Nombre estudiante</th>
                     <th>Observación</th>
-                    <th>Fecha</th>
-                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td colspan="5" style="text-align:center;color:var(--muted);">Cargando observaciones...</td></tr>
+                  <tr><td colspan="3" style="text-align:center;color:var(--muted);">Cargando observaciones...</td></tr>
                 </tbody>
               </table>
             </div>

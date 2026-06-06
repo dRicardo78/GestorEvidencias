@@ -643,7 +643,8 @@ tbody a:hover {
   }
 }
 
-#tableEvidencias tr.selected {
+#tableEvidencias tr.selected,
+#tableObservaciones tr.selected {
   background-color: #d0ebff;   /* azul claro */
   font-weight: bold;
 }
